@@ -1,0 +1,3232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ML Study Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+/* ════ RESET ════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ════ GLOBAL TOKENS (concrete values, no CSS vars needed from parent) ════ */
+:root {
+  --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", "Fira Code", monospace;
+
+  /* Colors */
+  --bg:        #ffffff;
+  --bg2:       #f7f7f8;
+  --bg3:       #f0f0f2;
+  --border:    #e4e4e7;
+  --border2:   #d4d4d8;
+  --text:      #18181b;
+  --text2:     #52525b;
+  --text3:     #a1a1aa;
+
+  /* Block accent colors */
+  --def-color:   #5b5bd6;
+  --ex-color:    #0f6e56;
+  --cond-color:  #b45309;
+  --warn-color:  #dc2626;
+  --pros-color:  #16a34a;
+  --cons-color:  #dc2626;
+
+  /* Block backgrounds */
+  --def-bg:    #efeffd;
+  --ex-bg:     #edfaf5;
+  --cond-bg:   #fef9ee;
+  --warn-bg:   #fef2f2;
+  --pros-bg:   #f0fdf4;
+  --cons-bg:   #fef2f2;
+  --form-bg:   #f4f4f5;
+  --mini-bg:   #f4f4f5;
+  --info-bg:   #eff6ff;
+  --info-color:#2563eb;
+
+  /* Layout */
+  --sidebar:   192px;
+  --hdr:       54px;
+  --radius:    8px;
+  --radius-sm: 5px;
+  --shadow:    0 1px 4px rgba(0,0,0,0.08);
+  --ease:      0.15s ease;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: var(--bg3);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ════ APP SHELL ════ */
+.app-root { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+/* ─ HEADER ─ */
+.app-hdr {
+  height: var(--hdr);
+  flex-shrink: 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 18px; gap: 14px;
+  box-shadow: var(--shadow);
+  z-index: 50;
+}
+.logo {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 15px; font-weight: 600; color: var(--text);
+  white-space: nowrap; flex-shrink: 0;
+  text-decoration: none;
+}
+.logo i { font-size: 20px; color: #5b5bd6; }
+
+.search-box {
+  flex: 1; max-width: 400px;
+  position: relative;
+}
+.search-box i.ico {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 15px; color: var(--text3); pointer-events: none;
+}
+#search {
+  width: 100%;
+  padding: 8px 34px 8px 32px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--bg2);
+  outline: none;
+  transition: border-color var(--ease), box-shadow var(--ease), background var(--ease);
+}
+#search::placeholder { color: var(--text3); }
+#search:focus {
+  border-color: #5b5bd6;
+  background: var(--bg);
+  box-shadow: 0 0 0 3px rgba(91,91,214,0.14);
+}
+.search-clear {
+  position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+  display: none; background: none; border: none; cursor: pointer;
+  color: var(--text3); padding: 2px 3px; border-radius: 4px;
+  font-size: 13px;
+  transition: color var(--ease);
+}
+.search-clear:hover { color: var(--text); }
+
+.hdr-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.btn-pill {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 11px;
+  border: 1.5px solid var(--border);
+  border-radius: 99px;
+  background: none;
+  cursor: pointer;
+  font-size: 12px; font-weight: 500;
+  color: var(--text2);
+  transition: background var(--ease), color var(--ease), border-color var(--ease);
+}
+.btn-pill:hover { background: var(--bg2); color: var(--text); border-color: var(--border2); }
+.btn-pill i { font-size: 14px; }
+
+/* ─ BODY ─ */
+.app-body { display: flex; flex: 1; overflow: hidden; }
+
+/* ─ SIDEBAR ─ */
+.sidebar {
+  width: var(--sidebar);
+  flex-shrink: 0;
+  background: var(--bg);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  overflow-y: auto; overflow-x: hidden;
+  padding: 8px 0 16px;
+}
+.sidebar-section-label {
+  padding: 12px 14px 5px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--text3);
+}
+.tab-btn {
+  display: flex; align-items: center; gap: 9px;
+  width: 100%; padding: 9px 14px;
+  border: none; background: none; cursor: pointer;
+  font-family: var(--sans);
+  font-size: 13px; font-weight: 500;
+  color: var(--text2);
+  text-align: left;
+  border-left: 3px solid transparent;
+  border-radius: 0;
+  transition: background var(--ease), color var(--ease), border-color var(--ease);
+  line-height: 1.3;
+}
+.tab-btn i { font-size: 16px; flex-shrink: 0; }
+.tab-btn:hover { background: var(--bg2); color: var(--text); }
+.tab-btn.active {
+  background: color-mix(in srgb, var(--tab-color, #5b5bd6) 10%, transparent);
+  color: var(--tab-color, #5b5bd6);
+  border-left-color: var(--tab-color, #5b5bd6);
+}
+
+/* ─ CONTENT ─ */
+.content-wrap {
+  flex: 1; overflow-y: auto;
+  padding: 28px 32px;
+  background: var(--bg3);
+}
+.content-wrap::-webkit-scrollbar { width: 6px; }
+.content-wrap::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+
+.tab-panel { display: none; max-width: 780px; margin: 0 auto; }
+.tab-panel.active { display: block; animation: fadeUp 0.2s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─ SEARCH RESULTS ─ */
+#search-results { display: none; max-width: 780px; margin: 0 auto; }
+.sr-meta { font-size: 12px; color: var(--text3); margin-bottom: 16px; }
+.sr-meta strong { color: var(--text); }
+.sr-group-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.7px;
+  text-transform: uppercase; color: var(--text3);
+  margin: 20px 0 8px;
+}
+.sr-group-label:first-of-type { margin-top: 0; }
+.sr-card {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 13px 16px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: box-shadow var(--ease), border-color var(--ease), transform var(--ease);
+}
+.sr-card:hover {
+  border-color: var(--border2);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  transform: translateY(-1px);
+}
+.sr-card-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+.sr-card-tab { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+.sr-card-snippet { font-size: 13px; color: var(--text2); line-height: 1.55; }
+.no-results {
+  text-align: center; padding: 56px 24px;
+  color: var(--text3); font-size: 14px;
+}
+.no-results i { font-size: 40px; display: block; margin-bottom: 10px; }
+mark.hl { background: #fde68a; border-radius: 2px; padding: 0 1px; color: inherit; }
+
+/* ════ CONTENT STYLES (replaces all CSS vars from original files) ════ */
+
+/* Page wrapper */
+.page { padding: 0; }
+
+/* Section header (title bar of each notes file) */
+.section-header {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+.section-header h1 { font-size: 18px; font-weight: 600; color: var(--text); line-height: 1.3; }
+.section-header p { font-size: 12px; color: var(--text2); margin-top: 3px; line-height: 1.5; }
+
+/* Topic cards */
+.topic-card {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color var(--ease);
+}
+.topic-card:has(.topic-body.open) { border-color: var(--border2); }
+
+.topic-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 18px; cursor: pointer;
+  border-bottom: 1.5px solid transparent;
+  user-select: none;
+  transition: background var(--ease);
+}
+.topic-card:has(.topic-body.open) .topic-header {
+  border-bottom-color: var(--border);
+  background: var(--bg2);
+}
+.topic-header:hover { background: var(--bg2); }
+
+.topic-title { display: flex; align-items: center; gap: 10px; }
+.topic-title h2 { font-size: 14px; font-weight: 600; color: var(--text); }
+.badge {
+  font-size: 10px; padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--info-bg);
+  color: var(--info-color);
+  font-weight: 600; letter-spacing: 0.2px;
+  border: 1px solid rgba(37,99,235,0.15);
+}
+.badge-warn {
+  font-size: 10px; padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--cond-bg);
+  color: var(--cond-color);
+  font-weight: 600;
+  border: 1px solid rgba(180,83,9,0.15);
+}
+.chevron {
+  transition: transform 0.2s ease;
+  font-size: 16px; color: var(--text3);
+  flex-shrink: 0;
+}
+.chevron.open { transform: rotate(180deg); }
+
+/* Topic body */
+.topic-body { display: none; padding: 20px; }
+.topic-body.open { display: block; }
+
+/* Sub-sections */
+.sub-section { margin-bottom: 18px; }
+.sub-section:last-child { margin-bottom: 0; }
+.sub-section h3 {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--text3);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1.5px solid var(--border);
+}
+
+/* ─ Block types ─ */
+.def-block, .example-block, .condition-block,
+.formula-block, .warn-block, .alert-block,
+.pros, .cons, .mini-card, .act-card {
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+}
+.def-block:last-child, .example-block:last-child,
+.condition-block:last-child, .formula-block:last-child {
+  margin-bottom: 0;
+}
+
+/* Definition */
+.def-block {
+  background: var(--def-bg);
+  border-left: 3px solid var(--def-color);
+  padding: 11px 14px;
+}
+.def-block .label { font-size: 10px; font-weight: 700; color: var(--def-color); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+.def-block p { font-size: 13.5px; color: var(--text); line-height: 1.65; }
+
+/* Example */
+.example-block {
+  background: var(--ex-bg);
+  border-left: 3px solid var(--ex-color);
+  padding: 11px 14px;
+}
+.example-block .label { font-size: 10px; font-weight: 700; color: var(--ex-color); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+.example-block p { font-size: 13.5px; color: var(--text); line-height: 1.65; }
+
+/* Condition / Key points */
+.condition-block {
+  background: var(--cond-bg);
+  border-left: 3px solid var(--cond-color);
+  padding: 11px 14px;
+}
+.condition-block .label { font-size: 10px; font-weight: 700; color: var(--cond-color); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+.condition-block ul { font-size: 13.5px; color: var(--text); line-height: 1.75; padding-left: 18px; }
+.condition-block ul li { margin-bottom: 2px; }
+
+/* Warning / Alert */
+.warn-block, .alert-block {
+  background: var(--warn-bg);
+  border-left: 3px solid var(--warn-color);
+  padding: 11px 14px;
+}
+.warn-block .label, .alert-block .label {
+  font-size: 10px; font-weight: 700; color: var(--warn-color);
+  text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px;
+}
+.warn-block p, .alert-block p { font-size: 13.5px; color: var(--text); line-height: 1.65; }
+
+/* Formula / Code */
+.formula-block {
+  background: var(--form-bg);
+  border: 1.5px solid var(--border);
+  padding: 13px 16px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  color: var(--text);
+  line-height: 1.75;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+.formula-block .label {
+  font-family: var(--sans);
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.6px;
+  color: var(--text3); margin-bottom: 7px;
+}
+
+/* Pros / Cons */
+.pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.pros {
+  background: var(--pros-bg);
+  border-left: 3px solid var(--pros-color);
+  padding: 11px 14px;
+}
+.pros .pc-label { font-size: 10px; font-weight: 700; color: var(--pros-color); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+.pros ul { font-size: 13px; color: var(--text); line-height: 1.7; padding-left: 16px; }
+.cons {
+  background: var(--cons-bg);
+  border-left: 3px solid var(--cons-color);
+  padding: 11px 14px;
+}
+.cons .pc-label { font-size: 10px; font-weight: 700; color: var(--cons-color); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+.cons ul { font-size: 13px; color: var(--text); line-height: 1.7; padding-left: 16px; }
+
+/* Mini cards */
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.grid4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.mini-card {
+  background: var(--mini-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+.mini-card .mc-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text3); margin-bottom: 5px; }
+.mini-card .mc-val { font-size: 12.5px; font-family: var(--mono); color: var(--text); line-height: 1.65; }
+
+/* Activation cards */
+.act-card {
+  background: var(--mini-bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+}
+.act-card .act-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 5px; }
+.act-card .act-formula { font-size: 12px; font-family: var(--mono); color: var(--text2); margin-bottom: 5px; }
+.act-card .act-range { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
+.act-card .act-use { font-size: 12.5px; color: var(--text); line-height: 1.55; }
+
+/* Tag rows */
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.tag {
+  font-size: 12px; padding: 3px 10px;
+  border-radius: 99px;
+  border: 1.5px solid var(--border);
+  color: var(--text2); background: var(--bg2);
+}
+
+/* Confusion matrix table */
+.cm-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 10px; border-radius: var(--radius-sm); overflow: hidden; }
+.cm-table td, .cm-table th { border: 1px solid var(--border); padding: 9px 12px; text-align: center; }
+.cm-table th { background: var(--bg2); font-weight: 600; font-size: 12px; color: var(--text2); }
+.cm-tp { background: #f0fdf4; color: #16a34a; font-weight: 600; }
+.cm-tn { background: #f0fdf4; color: #16a34a; font-weight: 600; }
+.cm-fp { background: #fef2f2; color: #dc2626; font-weight: 600; }
+.cm-fn { background: #fef2f2; color: #dc2626; font-weight: 600; }
+
+/* Group headers (in ml_evaluation) */
+.group-header {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+  text-transform: uppercase; color: var(--text3);
+  margin: 24px 0 10px; padding-left: 2px;
+  display: flex; align-items: center; gap: 8px;
+}
+.group-header::after {
+  content: '';
+  flex: 1; height: 1px; background: var(--border);
+}
+
+/* Responsive */
+@media (max-width: 680px) {
+  :root { --sidebar: 52px; }
+  .tab-btn span { display: none; }
+  .tab-btn { justify-content: center; padding: 11px; gap: 0; }
+  .sidebar-section-label { display: none; }
+  .content-wrap { padding: 16px 14px; }
+  .grid2, .pros-cons { grid-template-columns: 1fr; }
+  .grid3, .grid4 { grid-template-columns: 1fr 1fr; }
+  .logo span { display: none; }
+}
+@media (max-width: 420px) {
+  .hdr-actions { display: none; }
+  .search-box { max-width: none; }
+  .grid3, .grid4 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app-root">
+
+<!-- HEADER -->
+<header class="app-hdr">
+  <a href="#" class="logo">
+    <i class="ti ti-books"></i>
+    <span>ML Notes</span>
+  </a>
+
+  <div class="search-box">
+    <i class="ti ti-search ico"></i>
+    <input type="text" id="search" placeholder="Search all notes…" autocomplete="off" spellcheck="false">
+    <button class="search-clear" id="search-clear" title="Clear"><i class="ti ti-x"></i></button>
+  </div>
+
+  <div class="hdr-actions">
+    <button class="btn-pill" id="toggle-all">
+      <i class="ti ti-arrows-maximize" id="toggle-icon"></i>
+      <span id="toggle-label">Expand all</span>
+    </button>
+  </div>
+</header>
+
+<!-- BODY -->
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section-label">Topics</div>
+    <button class="tab-btn active" data-idx="0" style="--tab-color:#BA7517">
+        <i class="ti ti-wave-sine"></i>
+        <span>Calculus</span>
+      </button>
+<button class="tab-btn" data-idx="1" style="--tab-color:#993C1D">
+        <i class="ti ti-cpu"></i>
+        <span>Deep Learning</span>
+      </button>
+<button class="tab-btn" data-idx="2" style="--tab-color:#534AB7">
+        <i class="ti ti-math-function"></i>
+        <span>Linear Algebra</span>
+      </button>
+<button class="tab-btn" data-idx="3" style="--tab-color:#185FA5">
+        <i class="ti ti-settings"></i>
+        <span>ML Evaluation</span>
+      </button>
+<button class="tab-btn" data-idx="4" style="--tab-color:#0F6E56">
+        <i class="ti ti-chart-pie"></i>
+        <span>Probability</span>
+      </button>
+<button class="tab-btn" data-idx="5" style="--tab-color:#534AB7">
+        <i class="ti ti-chart-dots"></i>
+        <span>Statistics</span>
+      </button>
+<button class="tab-btn" data-idx="6" style="--tab-color:#185FA5">
+        <i class="ti ti-brain"></i>
+        <span>Supervised ML</span>
+      </button>
+
+  </nav>
+
+  <!-- CONTENT -->
+  <div class="content-wrap" id="content-wrap">
+    <div id="search-results"></div>
+    <div class="tab-panel active" data-idx="0"><div class="page">
+  <div class="section-header">
+    <i class="ti ti-wave-sine" style="font-size:28px;color:#BA7517;" aria-hidden="true"></i>
+    <div>
+      <h1>Calculus — Complete Notes</h1>
+      <p>Derivatives, partial derivatives, gradients, chain rule, convexity & gradient descent · Click any topic to expand</p>
+    </div>
+  </div>
+
+  <!-- 1. Derivatives -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-trending-up" style="font-size:18px;color:#BA7517;" aria-hidden="true"></i>
+        <h2>1. Derivatives</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The derivative f'(x) measures the instantaneous rate of change of a function at a point — the slope of the tangent line to the curve at that point. Geometrically: how fast is y changing as x changes by a tiny amount?</p></div>
+      <div class="formula-block"><div class="label">Formal Definition (Limit)</div>
+f'(x) = lim_{h→0}  [f(x+h) − f(x)] / h
+
+Notation:  f'(x)  =  dy/dx  =  df/dx  =  Df(x)
+      </div>
+      <div class="sub-section">
+        <h3>Common derivative rules</h3>
+        <div class="formula-block"><div class="label">Rules You Must Know</div>
+Power rule:      d/dx [xⁿ]    = n·xⁿ⁻¹
+Constant:        d/dx [c]     = 0
+Constant×f:      d/dx [c·f]   = c·f'
+Sum rule:        d/dx [f+g]   = f' + g'
+Product rule:    d/dx [f·g]   = f'g + fg'
+Quotient rule:   d/dx [f/g]   = (f'g − fg') / g²
+
+Key functions:
+  d/dx [eˣ]    = eˣ          (e^x is its own derivative!)
+  d/dx [ln x]  = 1/x
+  d/dx [sin x] = cos x
+  d/dx [cos x] = −sin x
+        </div>
+        <div class="example-block"><div class="label">Examples</div><p>f(x) = x³ + 5x² − 2x + 7 → f'(x) = 3x² + 10x − 2. At x=1: f'(1) = 3 + 10 − 2 = 11, meaning the function is rising at rate 11 per unit x. For ML loss L = w² → dL/dw = 2w, so weight update moves opposite to 2w.</p></div>
+      </div>
+      <div class="condition-block"><div class="label">When Derivative Doesn't Exist</div><ul>
+        <li>Corner/cusp: f(x) = |x| at x=0 (slope jumps from −1 to +1)</li>
+        <li>Discontinuity: function has a gap or jump</li>
+        <li>Vertical tangent: slope approaches ±∞</li>
+        <li>ReLU: not differentiable at x=0 → use subgradient (treat as 0 or 1)</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 2. Partial Derivatives -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrows-split-2" style="font-size:18px;color:#BA7517;" aria-hidden="true"></i>
+        <h2>2. Partial Derivatives</h2>
+        <span class="badge">Core ML Concept</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>For a function of multiple variables f(x, y, z, ...), the partial derivative with respect to one variable measures the rate of change in that direction, treating all other variables as constants.</p></div>
+      <div class="formula-block"><div class="label">Notation &amp; Computation</div>
+∂f/∂x  = partial derivative of f with respect to x
+         (treat all other variables as constants)
+
+Example: f(x, y) = 3x²y + 2xy³ + 5y
+
+∂f/∂x = 6xy + 2y³ + 0      ← treat y as constant
+∂f/∂y = 3x² + 6xy² + 5     ← treat x as constant
+
+Example: f(w, b) = (wx + b − y)²   ← MSE for one sample
+∂f/∂w = 2(wx + b − y) · x          ← rate of loss wrt weight
+∂f/∂b = 2(wx + b − y)              ← rate of loss wrt bias
+      </div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Every weight update in a neural network uses partial derivatives. If loss L depends on weights w₁, w₂, ..., wₙ, we compute ∂L/∂w₁, ∂L/∂w₂, ... independently and update each weight separately. This is the backbone of backpropagation.</p></div>
+      <div class="condition-block"><div class="label">Second-Order Partials</div><ul>
+        <li>∂²f/∂x² = second derivative wrt x → curvature in x direction</li>
+        <li>∂²f/∂x∂y = mixed partial → how x-slope changes with y</li>
+        <li>Clairaut's theorem: ∂²f/∂x∂y = ∂²f/∂y∂x (if continuous)</li>
+        <li>Hessian matrix H[i][j] = ∂²f/∂xᵢ∂xⱼ → used in second-order optimization</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 3. Gradients -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrow-up-right" style="font-size:18px;color:#BA7517;" aria-hidden="true"></i>
+        <h2>3. Gradients</h2>
+        <span class="badge">Core ML Concept</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The gradient ∇f is a vector of all partial derivatives of a multi-variable function. It points in the direction of steepest increase of the function. Its magnitude tells how steep that rise is.</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+∇f(x₁, x₂, ..., xₙ) = [∂f/∂x₁,  ∂f/∂x₂,  ...,  ∂f/∂xₙ]ᵀ
+
+Example: f(x, y) = x² + y²   (bowl shape)
+  ∂f/∂x = 2x,   ∂f/∂y = 2y
+  ∇f = [2x, 2y]ᵀ
+
+At point (3, 4):
+  ∇f = [6, 8]ᵀ   ← points away from origin (uphill direction)
+  ‖∇f‖ = √(36+64) = 10  ← steepness
+
+To go downhill (minimize): move in −∇f direction = [−6, −8]
+      </div>
+      <div class="condition-block"><div class="label">Key Properties</div><ul>
+        <li>∇f points in direction of steepest ascent</li>
+        <li>−∇f points in direction of steepest descent (used in GD)</li>
+        <li>∇f = 0 at a critical point (minimum, maximum, or saddle)</li>
+        <li>Gradient is perpendicular to level curves/surfaces</li>
+        <li>For scalar input: gradient reduces to ordinary derivative f'(x)</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Training a neural network: compute gradient of loss ∇_w L = [∂L/∂w₁, ∂L/∂w₂, ..., ∂L/∂wₙ]. Update each weight: w ← w − α·∇_w L. The gradient tells us which direction in weight space increases loss most — we go the opposite way.</p></div>
+    </div>
+  </div>
+
+  <!-- 4. Chain Rule -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-link" style="font-size:18px;color:#BA7517;" aria-hidden="true"></i>
+        <h2>4. Chain Rule</h2>
+        <span class="badge">Core ML Concept</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The chain rule computes the derivative of a composite function — a function inside another function. It's the mathematical engine behind backpropagation in neural networks.</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+If y = f(g(x)):
+  dy/dx = f'(g(x)) · g'(x)   =   (df/dg) · (dg/dx)
+
+"Derivative of outer × derivative of inner"
+
+Example 1:  y = (3x + 2)⁵
+  outer = u⁵,  inner = 3x+2
+  dy/dx = 5(3x+2)⁴ · 3 = 15(3x+2)⁴
+
+Example 2:  y = e^(x²)
+  outer = eᵘ,  inner = x²
+  dy/dx = e^(x²) · 2x
+
+Example 3:  y = ln(sin(x))
+  dy/dx = (1/sin(x)) · cos(x) = cos(x)/sin(x) = cot(x)
+      </div>
+      <div class="sub-section">
+        <h3>Multivariate chain rule</h3>
+        <div class="formula-block"><div class="label">Chain Rule for Multiple Variables</div>
+If z = f(x, y),  x = g(t),  y = h(t):
+  dz/dt = (∂z/∂x)(dx/dt) + (∂z/∂y)(dy/dt)
+
+Neural network layer example:
+  L = loss(a),  a = sigmoid(z),  z = w·x + b
+
+  ∂L/∂w = (∂L/∂a) · (∂a/∂z) · (∂z/∂w)
+         = loss'(a) · sigmoid'(z) · x
+
+Each term is a local gradient — backprop multiplies them back!
+        </div>
+      </div>
+      <div class="example-block"><div class="label">ML Use Case — Backpropagation</div><p>Backpropagation is literally the chain rule applied repeatedly from output to input. For a 3-layer network: ∂L/∂w₁ = (∂L/∂a₃)(∂a₃/∂z₃)(∂z₃/∂a₂)(∂a₂/∂z₂)(∂z₂/∂a₁)(∂a₁/∂z₁)(∂z₁/∂w₁). Each arrow in the computation graph is one application of the chain rule.</p></div>
+      <div class="condition-block"><div class="label">Vanishing Gradient Problem</div><ul>
+        <li>Sigmoid derivative max value = 0.25 at z=0</li>
+        <li>Chain rule multiplies these small values layer after layer</li>
+        <li>After 10 layers: 0.25¹⁰ ≈ 0.000001 → gradient vanishes</li>
+        <li>Early layers learn extremely slowly → use ReLU instead</li>
+        <li>ReLU derivative = 1 for x &gt; 0 → no multiplication shrinkage</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 5. Maxima and Minima -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-chart-line" style="font-size:18px;color:#BA7517;" aria-hidden="true"></i>
+        <h2>5. Maxima &amp; Minima</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A local minimum is a point where the function value is lower than all nearby points. A global minimum is the lowest point of the entire function. In ML, we search for the global minimum of the loss function.</p></div>
+      <div class="formula-block"><div class="label">Finding Critical Points — Single Variable</div>
+Step 1: Set f'(x) = 0  → find critical points x*
+
+Step 2: Apply Second Derivative Test:
+  f''(x*) > 0  → local MINIMUM  (concave up, "bowl")
+  f''(x*) < 0  → local MAXIMUM  (concave down, "hill")
+  f''(x*) = 0  → inconclusive (could be saddle/inflection)
+
+Example: f(x) = x³ − 3x + 2
+  f'(x) = 3x² − 3 = 0  →  x = ±1
+
+  f''(x) = 6x
+  f''(1)  =  6 > 0  → local minimum at x=1,  f(1) = 0
+  f''(−1) = −6 < 0  → local maximum at x=−1, f(−1) = 4
+      </div>
+      <div class="sub-section">
+        <h3>Multivariable case</h3>
+        <div class="formula-block"><div class="label">Using the Hessian Matrix</div>
+Set ∇f = 0  → find critical point (x*, y*)
+
+Compute Hessian H at (x*, y*):
+  H = | ∂²f/∂x²    ∂²f/∂x∂y |
+      | ∂²f/∂y∂x   ∂²f/∂y²  |
+
+D = det(H) = (∂²f/∂x²)(∂²f/∂y²) − (∂²f/∂x∂y)²
+
+D > 0 and ∂²f/∂x² > 0  → local minimum
+D > 0 and ∂²f/∂x² < 0  → local maximum
+D < 0                   → saddle point
+D = 0                   → inconclusive
+        </div>
+      </div>
+      <div class="condition-block"><div class="label">Local vs Global in ML</div><ul>
+        <li>Loss surfaces in DL have many local minima and saddle points</li>
+        <li>Saddle points: gradient = 0 but not a minimum → gradient descent can get stuck</li>
+        <li>Good news: most local minima in deep networks have similar loss values</li>
+        <li>Momentum and Adam optimizer help escape saddle points</li>
+        <li>Convex loss functions (logistic, linear) → single global minimum</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 6. Convex Functions -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-bowl" style="font-size:18px;color:#BA7517;" aria-hidden="true"></i>
+        <h2>6. Convex Functions</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A function is convex if the line segment between any two points on the curve lies above or on the curve. Visually: a "bowl" shape. Convex functions have only one global minimum — gradient descent is guaranteed to find it.</p></div>
+      <div class="formula-block"><div class="label">Formal Condition</div>
+A function f is convex if for all x, y and t ∈ [0,1]:
+  f(t·x + (1−t)·y)  ≤  t·f(x) + (1−t)·f(y)
+
+Equivalent conditions:
+  1. f''(x) ≥ 0 for all x  (single variable)
+  2. Hessian H is positive semi-definite (multivariable)
+
+Examples of convex functions:
+  f(x) = x²          f''=2 > 0  ✓
+  f(x) = eˣ          f''=eˣ > 0 ✓
+  f(x) = |x|         convex (V-shape, f''≥0 everywhere)
+  f(x) = −log(x)     convex for x > 0
+
+Non-convex:
+  f(x) = sin(x)      has both minima and maxima
+  f(x) = x³          f'' changes sign
+      </div>
+      <div class="condition-block"><div class="label">Why Convexity Matters in ML</div><ul>
+        <li>Convex loss → unique global minimum → gradient descent guaranteed to converge</li>
+        <li>Linear regression MSE loss → convex → always solvable</li>
+        <li>Logistic regression log-loss → convex → reliable training</li>
+        <li>Neural networks → non-convex → local minima, saddle points possible</li>
+        <li>L1 and L2 regularization are convex → preserve convexity when added to convex loss</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Jensen's Inequality</div><p>For convex f: f(E[X]) ≤ E[f(X)]. The function of the mean is at most the mean of the function. Used in proofs for EM algorithm, variational inference, and KL divergence properties.</p></div>
+    </div>
+  </div>
+
+  <!-- 7. Gradient Descent Intuition -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrow-down-right" style="font-size:18px;color:#BA7517;" aria-hidden="true"></i>
+        <h2>7. Gradient Descent Intuition</h2>
+        <span class="badge">Most Important</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Gradient descent is an iterative optimization algorithm that repeatedly moves in the direction of steepest descent (negative gradient) to minimize a function. Think of a blindfolded person on a hilly landscape taking steps downhill — they follow the slope of the ground beneath their feet.</p></div>
+      <div class="formula-block"><div class="label">Update Rule</div>
+w_new = w_old − α · ∇L(w_old)
+
+Where:
+  w     = parameter (weight) to update
+  α     = learning rate (step size)
+  ∇L(w) = gradient of loss with respect to w
+
+Example: L(w) = w²,  ∇L = 2w,  α = 0.1, start w=5
+
+  Step 1: w = 5 − 0.1×(2×5)  = 5 − 1.0 = 4.0
+  Step 2: w = 4 − 0.1×(2×4)  = 4 − 0.8 = 3.2
+  Step 3: w = 3.2 − 0.1×(6.4) = 3.2 − 0.64 = 2.56
+  ...converges toward w=0 (true minimum of w²)
+      </div>
+      <div class="sub-section">
+        <h3>Learning rate effects</h3>
+        <div class="condition-block"><div class="label">Choosing Learning Rate α</div><ul>
+          <li>α too large: overshoots minimum, loss oscillates or diverges</li>
+          <li>α too small: converges very slowly, wastes compute</li>
+          <li>α just right: smooth convergence toward minimum</li>
+          <li>Typical starting values: 0.01, 0.001, 0.0001 — tune via validation loss</li>
+          <li>Learning rate schedules: decay α over time (step decay, cosine annealing)</li>
+          <li>Adaptive optimizers (Adam, RMSProp) adjust α per parameter automatically</li>
+        </ul></div>
+      </div>
+      <div class="sub-section">
+        <h3>Variants of gradient descent</h3>
+        <div class="formula-block"><div class="label">Three Main Variants</div>
+1. Batch GD: use ALL training samples per update
+   Pros: stable gradient estimate
+   Cons: very slow on large datasets, requires all data in memory
+
+2. Stochastic GD (SGD): use ONE sample per update
+   Pros: very fast updates, can escape local minima (noisy)
+   Cons: noisy gradient → oscillates around minimum
+
+3. Mini-batch GD: use small batch (32, 64, 128, 256 samples)
+   Pros: balance of speed and stability ← used in practice!
+   Cons: batch size is a hyperparameter to tune
+        </div>
+      </div>
+      <div class="alert-block"><div class="label">Key Insight</div><p>Gradient descent doesn't compute the derivative — it uses the gradient to decide the direction and size of each step. The learning rate controls how much we trust that gradient direction before re-evaluating. Too large α = chaos; too small α = patience required.</p></div>
+      <div class="example-block"><div class="label">ML Use Case — Full Training Loop</div><p>1. Initialize weights randomly. 2. Forward pass: compute predictions and loss. 3. Backward pass: compute ∇L using backprop (chain rule). 4. Update: w ← w − α·∇L. 5. Repeat for many epochs until loss converges. This loop is gradient descent in action — every deep learning model trains this way.</p></div>
+    </div>
+  </div>
+
+</div></div>
+<div class="tab-panel" data-idx="1"><div class="page">
+  <div class="section-header">
+    <i class="ti ti-cpu" style="font-size:28px;color:#993C1D;" aria-hidden="true"></i>
+    <div>
+      <h1>Deep Learning Basics — Complete Notes</h1>
+      <p>Perceptron · Neural Networks · Activations · Forward/Backprop · Dropout · Batch Norm · Click to expand</p>
+    </div>
+  </div>
+
+  <!-- 1. Perceptron -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-circles-relation" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>1. Perceptron</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The perceptron is the simplest neural unit — the building block of all neural networks. It takes weighted inputs, sums them with a bias, applies an activation function, and produces an output. Inspired by a biological neuron.</p></div>
+      <div class="formula-block"><div class="label">Perceptron Model</div>
+Input:    x = [x₁, x₂, ..., xₙ]
+Weights:  w = [w₁, w₂, ..., wₙ]
+Bias:     b
+
+Weighted sum:   z = w₁x₁ + w₂x₂ + ... + wₙxₙ + b = w·x + b
+Activation:     ŷ = f(z)
+
+Original perceptron (Rosenblatt 1957):
+  f(z) = 1 if z ≥ 0,  else 0   ← step function
+
+Modern neuron:  f(z) = ReLU(z), sigmoid(z), tanh(z), etc.
+
+Learning rule (perceptron update):
+  w ← w + α·(y − ŷ)·x
+  b ← b + α·(y − ŷ)
+      </div>
+      <div class="condition-block"><div class="label">Limitations of a Single Perceptron</div><ul>
+        <li>Can only learn linearly separable patterns</li>
+        <li>Cannot solve XOR problem (famous 1969 Minsky &amp; Papert critique)</li>
+        <li>Fix: stack multiple layers → Multi-Layer Perceptron (MLP)</li>
+        <li>With non-linear activations, MLPs become universal function approximators</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 2. Neural Networks -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-topology-star" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>2. Neural Networks (MLP)</h2>
+        <span class="badge">Core Concept</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A Multi-Layer Perceptron (MLP) stacks layers of perceptrons. Input layer receives features, hidden layers learn representations, output layer produces predictions. Each layer applies a linear transformation followed by a non-linear activation.</p></div>
+      <div class="formula-block"><div class="label">Layer-by-Layer Computation</div>
+Architecture:  Input → [Hidden₁] → [Hidden₂] → Output
+
+For each layer l:
+  Z[l] = W[l] · A[l-1] + b[l]     ← linear step
+  A[l] = f(Z[l])                   ← activation (non-linear)
+
+Where:
+  W[l] = weight matrix, shape: (neurons_l, neurons_{l-1})
+  b[l] = bias vector,   shape: (neurons_l, 1)
+  A[0] = X              ← input layer
+
+Example — 2 hidden layer network:
+  Input: x ∈ ℝ³
+  Hidden1: 4 neurons → Z[1]=W[1]·x+b[1], A[1]=ReLU(Z[1])
+  Hidden2: 4 neurons → Z[2]=W[2]·A[1]+b[2], A[2]=ReLU(Z[2])
+  Output: 1 neuron  → Z[3]=W[3]·A[2]+b[3], ŷ=sigmoid(Z[3])
+      </div>
+      <div class="condition-block"><div class="label">Architecture Design Rules</div><ul>
+        <li>Input layer size = number of features</li>
+        <li>Output layer size = number of classes (or 1 for binary/regression)</li>
+        <li>Output activation: sigmoid (binary), softmax (multiclass), none/linear (regression)</li>
+        <li>Hidden activations: ReLU is the default choice</li>
+        <li>Deeper (more layers) → learns more abstract features</li>
+        <li>Wider (more neurons) → more capacity per layer</li>
+        <li>Universal approximation theorem: 1 hidden layer + enough neurons can approximate any continuous function</li>
+      </ul></div>
+      <div class="formula-block"><div class="label">Parameter Count</div>
+Layer l connecting nₗ₋₁ → nₗ neurons:
+  Parameters = nₗ × nₗ₋₁  (weights) + nₗ (biases)
+
+Example: 3→4→4→1 network
+  Layer1: 3×4 + 4 = 16
+  Layer2: 4×4 + 4 = 20
+  Layer3: 4×1 + 1 = 5
+  Total:  41 parameters
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Activation Functions -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-wave-sine" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>3. Activation Functions</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Why Activations are Needed</div><p>Without non-linear activation functions, stacking linear layers produces another linear layer — no matter how deep. Non-linearity allows networks to learn complex, non-linear patterns like image features, language structure, and decision boundaries.</p></div>
+      <div class="grid3">
+        <div class="act-card">
+          <div class="act-name">ReLU</div>
+          <div class="act-formula">f(x) = max(0, x)</div>
+          <div class="act-range">Range: [0, ∞)</div>
+          <div class="act-use">Default for hidden layers. Fast, no vanishing gradient for x&gt;0. Dead neurons if x&lt;0 always.</div>
+        </div>
+        <div class="act-card">
+          <div class="act-name">Sigmoid</div>
+          <div class="act-formula">f(x) = 1/(1+e⁻ˣ)</div>
+          <div class="act-range">Range: (0, 1)</div>
+          <div class="act-use">Binary output layer. Squashes to probability. Vanishing gradient for large |x|.</div>
+        </div>
+        <div class="act-card">
+          <div class="act-name">Tanh</div>
+          <div class="act-formula">f(x) = (eˣ−e⁻ˣ)/(eˣ+e⁻ˣ)</div>
+          <div class="act-range">Range: (−1, 1)</div>
+          <div class="act-use">Zero-centered (better than sigmoid). Still has vanishing gradient at extremes.</div>
+        </div>
+      </div>
+      <div class="formula-block"><div class="label">Derivatives (needed for backprop)</div>
+ReLU:    f'(x) = 1 if x > 0,  else 0
+         → gradient is 1 or 0 — no shrinkage for positive inputs ✓
+
+Sigmoid: f'(x) = σ(x)·(1−σ(x))
+         → max value = 0.25 at x=0
+         → vanishing gradient after many layers ✗
+
+Tanh:    f'(x) = 1 − tanh²(x)
+         → max value = 1.0 at x=0, but drops fast ✗
+
+Softmax (output, multiclass):
+  f(xᵢ) = eˣⁱ / Σⱼ eˣʲ
+  → outputs sum to 1 → probability distribution over classes
+      </div>
+      <div class="condition-block"><div class="label">ReLU Variants</div><ul>
+        <li>Leaky ReLU: f(x) = x if x&gt;0, else 0.01x → fixes dead neuron problem</li>
+        <li>ELU: f(x) = x if x&gt;0, else α(eˣ−1) → smooth negative side</li>
+        <li>GELU: f(x) = x·Φ(x) → used in BERT, GPT transformers</li>
+        <li>Swish: f(x) = x·sigmoid(x) → smooth, non-monotonic, used in EfficientNet</li>
+        <li>Dead ReLU problem: neuron stuck at 0 → fix with lower learning rate or Leaky ReLU</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 4. Forward Propagation -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrow-right" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>4. Forward Propagation</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Forward propagation is the process of passing input data through the network layer by layer to compute predictions. Each layer transforms its input using learned weights, biases, and an activation function.</p></div>
+      <div class="formula-block"><div class="label">Complete Forward Pass Example</div>
+Network: 2 inputs → 3 hidden (ReLU) → 1 output (sigmoid)
+
+Input: x = [0.5, 0.8]
+
+W[1] = [[0.2, 0.4],   b[1] = [0.1, 0.0, −0.1]
+         [0.3, 0.1],
+         [0.5, 0.2]]
+
+Z[1] = W[1]·x + b[1]
+     = [0.2×0.5+0.4×0.8, 0.3×0.5+0.1×0.8, 0.5×0.5+0.2×0.8] + b[1]
+     = [0.42, 0.23, 0.41] + [0.1, 0.0, −0.1]
+     = [0.52, 0.23, 0.31]
+
+A[1] = ReLU([0.52, 0.23, 0.31]) = [0.52, 0.23, 0.31]  (all positive)
+
+W[2] = [[0.6, 0.3, 0.5]],  b[2] = [−0.2]
+
+Z[2] = W[2]·A[1] + b[2]
+     = 0.6×0.52 + 0.3×0.23 + 0.5×0.31 − 0.2
+     = 0.312 + 0.069 + 0.155 − 0.2 = 0.336
+
+ŷ = sigmoid(0.336) = 1/(1+e^{−0.336}) ≈ 0.583
+      </div>
+      <div class="condition-block"><div class="label">Cache for Backprop</div><ul>
+        <li>During forward pass: cache Z[l] and A[l] for every layer</li>
+        <li>These cached values are needed to compute gradients in backprop</li>
+        <li>More memory usage during training vs inference</li>
+        <li>Inference (no training): don't need to cache → faster, less memory</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 5. Backpropagation -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrow-left" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>5. Backpropagation</h2>
+        <span class="badge">Core Concept</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Backpropagation is the algorithm for computing gradients of the loss with respect to every weight in the network, by applying the chain rule backward from output to input. It tells us how much each weight contributed to the error.</p></div>
+      <div class="formula-block"><div class="label">Backprop Equations (L layers)</div>
+Forward (already done): compute Z[l], A[l] for all layers
+
+Backward — start from output layer L:
+  dA[L] = ∂L/∂A[L]   ← from loss function
+
+  For each layer l = L, L-1, ..., 1:
+    dZ[l] = dA[l] * f'(Z[l])         ← element-wise with activation deriv
+    dW[l] = (1/m) dZ[l] · A[l-1]ᵀ   ← gradient for weights
+    db[l] = (1/m) Σ dZ[l]            ← gradient for bias
+    dA[l-1] = W[l]ᵀ · dZ[l]         ← pass gradient to previous layer
+
+Weight update:
+    W[l] ← W[l] − α · dW[l]
+    b[l] ← b[l] − α · db[l]
+      </div>
+      <div class="example-block"><div class="label">Intuitive Example</div><p>Think of backprop as asking "who is to blame for the error?" starting from the output. The output layer takes most blame if its weights are large. It passes blame backward, proportional to each weight's contribution. Each layer adjusts its weights to reduce its share of the blame. After many iterations, the whole network learns to minimize the error together.</p></div>
+      <div class="condition-block"><div class="label">Key Points</div><ul>
+        <li>Backprop is just the chain rule applied efficiently using dynamic programming</li>
+        <li>Each gradient is computed ONCE and reused → O(n) not O(n²)</li>
+        <li>Requires activation functions to be differentiable (or have subgradients)</li>
+        <li>Gradient flows backward through the same weights used in forward pass</li>
+        <li>Exploding gradients: gradients grow exponentially → fix with gradient clipping</li>
+        <li>Vanishing gradients: gradients shrink to zero → fix with ReLU, BatchNorm, skip connections</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 6. Loss Functions -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-target" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>6. Loss Functions</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="formula-block"><div class="label">Loss Functions by Task</div>
+Regression:
+  MSE  = (1/n) Σ(y−ŷ)²              → punishes large errors heavily
+  MAE  = (1/n) Σ|y−ŷ|               → robust to outliers
+  Huber = MSE if |y−ŷ|≤δ, else MAE  → best of both
+
+Binary Classification:
+  Binary Cross-Entropy:
+  L = −(1/n) Σ [y log(ŷ) + (1−y) log(1−ŷ)]
+  → y=1: L = −log(ŷ)   ← penalizes low confidence on true positive
+  → y=0: L = −log(1−ŷ) ← penalizes high confidence on true negative
+
+Multi-class Classification:
+  Categorical Cross-Entropy:
+  L = −(1/n) Σᵢ Σₖ yᵢₖ log(ŷᵢₖ)
+  → yᵢₖ is one-hot encoded (1 for true class, 0 otherwise)
+  → ŷᵢₖ is softmax output
+
+Numerical example (binary):
+  y=1, ŷ=0.9 → L = −log(0.9) = 0.105   ← small loss ✓
+  y=1, ŷ=0.1 → L = −log(0.1) = 2.303   ← large loss ✗
+      </div>
+      <div class="condition-block"><div class="label">Choosing the Right Loss</div><ul>
+        <li>Regression → MSE (default) or MAE (if outliers present)</li>
+        <li>Binary classification → Binary cross-entropy + sigmoid output</li>
+        <li>Multiclass classification → Categorical cross-entropy + softmax output</li>
+        <li>Never use MSE for classification → non-convex, poor gradients near 0/1</li>
+        <li>Imbalanced classes → use weighted cross-entropy or focal loss</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 7. Epochs and Batch Size -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-repeat" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>7. Epochs &amp; Batch Size</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="formula-block"><div class="label">Key Definitions</div>
+Epoch:       one complete pass through the ENTIRE training dataset
+Batch size:  number of samples processed before one weight update
+Iteration:   one weight update = one forward + backward pass on a batch
+
+Relationship:
+  iterations per epoch = n_samples / batch_size
+
+  n_samples = 10,000,  batch_size = 100
+  → 100 iterations per epoch
+  → after 50 epochs: 5,000 total weight updates
+
+Typical values:
+  Batch size: 32, 64, 128, 256  (powers of 2 → GPU efficiency)
+  Epochs:     10–1000 depending on dataset size and task
+      </div>
+      <div class="condition-block"><div class="label">Effect of Batch Size</div><ul>
+        <li>Small batch (8–32): noisy gradients, acts as regularization, slower per epoch, better generalization</li>
+        <li>Large batch (256–2048): stable gradients, faster per epoch, may overfit, needs learning rate warmup</li>
+        <li>Batch size = 1: pure SGD — very noisy, can escape local minima</li>
+        <li>Rule of thumb: start with batch size 32, scale learning rate proportionally if increasing</li>
+        <li>Early stopping: monitor val loss, stop when it stops improving → prevents overfitting</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Training Loop Summary</div><p>For each epoch → shuffle data → split into batches → for each batch: forward pass → compute loss → backward pass → update weights. One epoch done. Repeat. Monitor train and val loss each epoch. Stop when val loss stops improving (early stopping) or after fixed epochs.</p></div>
+    </div>
+  </div>
+
+  <!-- 8. Dropout -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-plug-x" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>8. Dropout</h2>
+        <span class="badge">Regularization Technique</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Dropout is a regularization technique that randomly "drops" (sets to zero) a fraction p of neurons during each training step. This forces the network to learn redundant representations and prevents co-adaptation of neurons — reducing overfitting.</p></div>
+      <div class="formula-block"><div class="label">How Dropout Works</div>
+During TRAINING:
+  For each neuron in the layer:
+    With probability p:    set activation = 0 (dropped)
+    With probability 1−p:  keep activation, scale by 1/(1−p)
+
+  Scaling by 1/(1−p) ensures expected value stays the same
+
+During INFERENCE (test/prediction):
+  ALL neurons are active (no dropout)
+  No scaling needed (already handled during training)
+
+Common dropout rates:
+  p = 0.5  → hidden layers (50% neurons dropped)
+  p = 0.2  → input layer (20% features dropped)
+  p = 0.1  → output layer (rarely used)
+      </div>
+      <div class="condition-block"><div class="label">Key Rules &amp; Intuitions</div><ul>
+        <li>Each training step uses a different random subset of neurons → trains an ensemble of ~2ⁿ subnetworks</li>
+        <li>At inference: the full network approximates averaging all those subnetworks</li>
+        <li>Prevents neurons from co-adapting — no neuron can rely on specific other neurons</li>
+        <li>Apply dropout AFTER activation, BEFORE the next layer</li>
+        <li>Do NOT apply dropout during evaluation/inference</li>
+        <li>Higher dropout rate → stronger regularization but slower learning</li>
+        <li>Not as effective with batch normalization (they can conflict)</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example</div><p>Layer with 1000 neurons, dropout p=0.5. During training: 500 random neurons are zeroed each forward pass, remaining 500 scaled by 2. Next batch: different 500 neurons dropped. The network can never rely on any single neuron being there — forces robust, distributed representations.</p></div>
+    </div>
+  </div>
+
+  <!-- 9. Batch Normalization -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-adjustments" style="font-size:18px;color:#993C1D;" aria-hidden="true"></i>
+        <h2>9. Batch Normalization</h2>
+        <span class="badge">Core Technique</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Batch Normalization (BatchNorm) normalizes the inputs to each layer within a mini-batch to have zero mean and unit variance, then applies learnable scale (γ) and shift (β) parameters. Dramatically speeds up training and allows higher learning rates.</p></div>
+      <div class="formula-block"><div class="label">Algorithm</div>
+For a mini-batch B = {x₁, x₂, ..., xₘ} through a layer:
+
+Step 1: Compute batch mean and variance
+  μ_B = (1/m) Σ xᵢ
+  σ²_B = (1/m) Σ (xᵢ − μ_B)²
+
+Step 2: Normalize
+  x̂ᵢ = (xᵢ − μ_B) / √(σ²_B + ε)     ε ≈ 1e-5 (for stability)
+
+Step 3: Scale and shift (learnable parameters γ, β)
+  yᵢ = γ · x̂ᵢ + β
+
+γ and β are learned during training
+  → network can undo normalization if that's optimal
+
+During inference: use running mean/variance computed during training
+      </div>
+      <div class="condition-block"><div class="label">Benefits &amp; Placement</div><ul>
+        <li>Reduces internal covariate shift → layers don't chase moving distributions</li>
+        <li>Allows 10x higher learning rates → much faster training</li>
+        <li>Acts as mild regularizer → sometimes reduces need for dropout</li>
+        <li>Reduces sensitivity to weight initialization</li>
+        <li>Placement: usually AFTER linear layer, BEFORE activation: Linear → BN → ReLU</li>
+        <li>Layer Norm: alternative for NLP/transformers where batch size varies (normalizes across features, not batch)</li>
+      </ul></div>
+      <div class="warn-block"><div class="label">Watch out</div><p>BatchNorm behavior differs between training and inference — must call model.eval() in PyTorch (or set learning=False in Keras) during inference, otherwise it uses batch statistics instead of running statistics → wrong predictions.</p></div>
+    </div>
+  </div>
+
+</div></div>
+<div class="tab-panel" data-idx="2"><div class="page">
+  <div class="section-header">
+    <i class="ti ti-math-function" style="font-size:28px; color:#534AB7;" aria-hidden="true"></i>
+    <div>
+      <h1>Linear Algebra — Complete Notes</h1>
+      <p>Vectors, matrices, transformations, eigenvalues & more · Click any topic to expand</p>
+    </div>
+  </div>
+
+  <!-- 1. Vectors and Matrices -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-vector" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>1. Vectors &amp; Matrices</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="sub-section">
+        <h3>Vector</h3>
+        <div class="def-block"><div class="label">Definition</div><p>An ordered list of numbers representing a point or direction in space. A column vector of size n is written as an n×1 matrix.</p></div>
+        <div class="example-block"><div class="label">Example</div><p>v = [2, 3, 5]ᵀ is a 3-dimensional column vector. It can represent a point in 3D space or a direction.</p></div>
+        <div class="condition-block"><div class="label">Key Properties</div><ul>
+          <li>Magnitude (norm): ‖v‖ = √(v₁² + v₂² + ... + vₙ²)</li>
+          <li>Unit vector: v̂ = v / ‖v‖ (magnitude = 1)</li>
+          <li>Zero vector: all components = 0, no direction</li>
+        </ul></div>
+      </div>
+      <div class="sub-section">
+        <h3>Matrix</h3>
+        <div class="def-block"><div class="label">Definition</div><p>A rectangular array of numbers arranged in m rows and n columns. Denoted A (m×n).</p></div>
+        <div class="formula-block"><div class="label">Notation</div>
+A = | 1  2  3 |   ← 2×3 matrix (2 rows, 3 cols)
+    | 4  5  6 |
+
+A[i][j] = element at row i, column j
+        </div>
+        <div class="example-block"><div class="label">Example</div><p>A 2×2 matrix: A = [[3,1],[2,4]]. Represents a linear transformation in 2D — it can rotate, scale, shear the space.</p></div>
+        <div class="condition-block"><div class="label">Types of Matrices</div><ul>
+          <li>Square matrix: m = n (rows = cols)</li>
+          <li>Identity matrix I: 1s on diagonal, 0s elsewhere; A×I = A</li>
+          <li>Diagonal matrix: non-zero only on main diagonal</li>
+          <li>Symmetric matrix: A = Aᵀ (equal to its transpose)</li>
+          <li>Zero matrix: all elements = 0</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Matrix Multiplication -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrows-exchange" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>2. Matrix Multiplication</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>If A is m×n and B is n×p, then C = A×B is m×p. The (i,j) entry of C = dot product of i-th row of A with j-th column of B.</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+C[i][j] = Σₖ A[i][k] × B[k][j]
+
+A = |1 2|   B = |5 6|   C = A×B
+    |3 4|       |7 8|
+
+C[0][0] = 1×5 + 2×7 = 19
+C[0][1] = 1×6 + 2×8 = 22
+C[1][0] = 3×5 + 4×7 = 43
+C[1][1] = 3×6 + 4×8 = 50
+      </div>
+      <div class="condition-block"><div class="label">Conditions &amp; Rules</div><ul>
+        <li>Columns of A must equal rows of B: (m×n) × (n×p) → (m×p)</li>
+        <li>NOT commutative: A×B ≠ B×A in general</li>
+        <li>Associative: (A×B)×C = A×(B×C)</li>
+        <li>Distributive: A×(B+C) = A×B + A×C</li>
+        <li>Identity: A×I = I×A = A</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>In neural networks, each layer computes Z = W×X + b where W is the weight matrix and X is the input. Matrix multiplication is the core operation of forward propagation.</p></div>
+    </div>
+  </div>
+
+  <!-- 3. Transpose and Inverse -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-rotate" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>3. Transpose &amp; Inverse</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="sub-section">
+        <h3>Transpose (Aᵀ)</h3>
+        <div class="def-block"><div class="label">Definition</div><p>Flipping a matrix over its diagonal. The (i,j) element becomes (j,i). An m×n matrix becomes n×m.</p></div>
+        <div class="formula-block"><div class="label">Example</div>
+A  = |1 2 3|     Aᵀ = |1 4|
+     |4 5 6|          |2 5|
+                       |3 6|
+        </div>
+        <div class="condition-block"><div class="label">Properties</div><ul>
+          <li>(Aᵀ)ᵀ = A (double transpose restores original)</li>
+          <li>(A+B)ᵀ = Aᵀ + Bᵀ</li>
+          <li>(A×B)ᵀ = Bᵀ × Aᵀ (order reverses!)</li>
+          <li>Symmetric matrix: A = Aᵀ (e.g., covariance matrices)</li>
+        </ul></div>
+      </div>
+      <div class="sub-section">
+        <h3>Inverse (A⁻¹)</h3>
+        <div class="def-block"><div class="label">Definition</div><p>For a square matrix A, its inverse A⁻¹ satisfies A × A⁻¹ = A⁻¹ × A = I. Used to "undo" a linear transformation.</p></div>
+        <div class="formula-block"><div class="label">2×2 Inverse Formula</div>
+A = |a b|   →   A⁻¹ = 1/(ad−bc) × | d  −b|
+    |c d|                           |−c   a|
+
+Example: A = |2 1|  →  det = 2×4−1×3 = 5
+             |3 4|
+A⁻¹ = (1/5) × |4 −1| = |0.8  −0.2|
+               |−3  2|  |−0.6  0.4|
+        </div>
+        <div class="condition-block"><div class="label">Conditions for Invertibility</div><ul>
+          <li>Matrix must be square (n×n)</li>
+          <li>Determinant ≠ 0 (non-singular)</li>
+          <li>All rows/columns must be linearly independent</li>
+          <li>Rank must equal n (full rank)</li>
+          <li>Singular matrix (det=0): no inverse exists</li>
+        </ul></div>
+        <div class="example-block"><div class="label">ML Use Case</div><p>Linear regression closed-form solution: θ = (XᵀX)⁻¹ Xᵀy. We use the inverse to directly solve for optimal weights.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Rank -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-stairs" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>4. Rank of a Matrix</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The rank of a matrix is the number of linearly independent rows (or columns). It tells you the "true dimensionality" of the information in the matrix.</p></div>
+      <div class="formula-block"><div class="label">Example</div>
+A = |1 2 3|
+    |4 5 6|   → Row 3 = Row1 + Row2, so rank = 2
+    |5 7 9|
+
+B = |1 0|
+    |0 1|   → Both rows independent, rank = 2 (full rank)
+      </div>
+      <div class="condition-block"><div class="label">Key Rules</div><ul>
+        <li>rank(A) ≤ min(m, n) for an m×n matrix</li>
+        <li>Full rank: rank = min(m, n) — maximum possible rank</li>
+        <li>rank(A) = rank(Aᵀ) always</li>
+        <li>If rank &lt; n, matrix is singular (non-invertible)</li>
+        <li>Rank reveals redundancy in features (collinearity)</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>If your feature matrix X has rank less than the number of features, some features are redundant (perfect multicollinearity), and (XᵀX) becomes non-invertible — linear regression fails without regularization.</p></div>
+    </div>
+  </div>
+
+  <!-- 5. Determinant -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-square-rotated" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>5. Determinant</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A scalar value computed from a square matrix. It represents the volume scaling factor of the transformation — how much the matrix stretches or squishes space.</p></div>
+      <div class="formula-block"><div class="label">Formulas</div>
+2×2: det(A) = ad − bc
+     A = |a b|  →  det = a×d − b×c
+         |c d|
+
+3×3: det(A) = a(ei−fh) − b(di−fg) + c(dh−eg)
+     A = |a b c|
+         |d e f|
+         |g h i|
+
+Example: A = |3 1|  →  det = 3×2 − 1×4 = 6 − 4 = 2
+             |4 2|
+      </div>
+      <div class="condition-block"><div class="label">Conditions &amp; Properties</div><ul>
+        <li>det = 0 → matrix is singular (not invertible)</li>
+        <li>det &gt; 0 → transformation preserves orientation</li>
+        <li>det &lt; 0 → transformation flips orientation</li>
+        <li>|det| = volume scale factor of the transformation</li>
+        <li>det(A×B) = det(A) × det(B)</li>
+        <li>det(Aᵀ) = det(A)</li>
+        <li>det(A⁻¹) = 1/det(A)</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 6. Eigenvalues and Eigenvectors -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrows-maximize" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>6. Eigenvalues &amp; Eigenvectors</h2>
+        <span class="badge">Core ML Concept</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>For a square matrix A, a non-zero vector v is an eigenvector if multiplying it by A only scales it — it doesn't change direction. The scaling factor λ is the eigenvalue.</p></div>
+      <div class="formula-block"><div class="label">Core Equation</div>
+A × v = λ × v
+
+A = matrix,  v = eigenvector,  λ = eigenvalue
+
+To find eigenvalues: det(A − λI) = 0  ← characteristic equation
+
+Example: A = |4 1|
+             |2 3|
+det(A − λI) = (4−λ)(3−λ) − 1×2 = 0
+            = λ² − 7λ + 10 = 0
+            = (λ−5)(λ−2) = 0
+→ Eigenvalues: λ₁ = 5,  λ₂ = 2
+      </div>
+      <div class="condition-block"><div class="label">Finding Eigenvectors</div><ul>
+        <li>For each λ, solve (A − λI)v = 0</li>
+        <li>λ₁=5: (A−5I)v=0 → [[-1,1],[2,-2]]v=0 → v₁=[1,1]ᵀ</li>
+        <li>λ₂=2: (A−2I)v=0 → [[2,1],[2,1]]v=0 → v₂=[1,-2]ᵀ</li>
+        <li>Eigenvectors are NOT unique — any scalar multiple works</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case (PCA)</div><p>In PCA, we compute eigenvalues of the covariance matrix. The eigenvector with the largest eigenvalue = direction of maximum variance (first principal component). Eigenvalues tell us how much variance each component explains.</p></div>
+      <div class="condition-block"><div class="label">Key Properties</div><ul>
+        <li>n×n matrix has exactly n eigenvalues (counting multiplicity)</li>
+        <li>Sum of eigenvalues = trace(A) (sum of diagonal elements)</li>
+        <li>Product of eigenvalues = det(A)</li>
+        <li>Symmetric matrices always have real eigenvalues</li>
+        <li>Distinct eigenvalues → linearly independent eigenvectors</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 7. Orthogonality -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-angle" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>7. Orthogonality</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Two vectors are orthogonal if their dot product = 0. This means they are perpendicular (90° angle between them). A set of mutually orthogonal unit vectors is called an orthonormal set.</p></div>
+      <div class="formula-block"><div class="label">Formulas</div>
+Orthogonal: u · v = 0
+Orthonormal: u · v = 0  AND  ‖u‖ = ‖v‖ = 1
+
+Example: u = [1, 0],  v = [0, 1]
+u · v = 1×0 + 0×1 = 0  → orthogonal
+‖u‖ = 1, ‖v‖ = 1  → orthonormal
+
+Non-obvious example:
+u = [3, 4],  v = [4, -3]
+u · v = 3×4 + 4×(-3) = 12 − 12 = 0  ✓ orthogonal
+      </div>
+      <div class="condition-block"><div class="label">Orthogonal Matrix Q</div><ul>
+        <li>Columns are mutually orthonormal vectors</li>
+        <li>Q × Qᵀ = Qᵀ × Q = I  →  Q⁻¹ = Qᵀ</li>
+        <li>Preserves lengths and angles (rotation/reflection)</li>
+        <li>det(Q) = ±1</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Orthogonal features are uncorrelated — ideal in ML to avoid multicollinearity. PCA produces orthogonal principal components, ensuring each captures independent variance.</p></div>
+    </div>
+  </div>
+
+  <!-- 8. Dot Product -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-point" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>8. Dot Product</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The dot product of two vectors is the sum of their element-wise products. It yields a scalar and measures how much one vector "projects" onto another.</p></div>
+      <div class="formula-block"><div class="label">Two Equivalent Formulas</div>
+Algebraic:   a · b = a₁b₁ + a₂b₂ + ... + aₙbₙ
+Geometric:   a · b = ‖a‖ × ‖b‖ × cos(θ)
+
+Example: a = [1, 2, 3],  b = [4, 5, 6]
+a · b = 1×4 + 2×5 + 3×6 = 4 + 10 + 18 = 32
+
+Cosine similarity: cos(θ) = (a · b) / (‖a‖ × ‖b‖)
+‖a‖ = √(1+4+9) = √14,  ‖b‖ = √(16+25+36) = √77
+cos(θ) = 32 / (√14 × √77) ≈ 0.974  (very similar direction)
+      </div>
+      <div class="condition-block"><div class="label">Geometric Interpretation</div><ul>
+        <li>a · b &gt; 0 → vectors point in same general direction (θ &lt; 90°)</li>
+        <li>a · b = 0 → vectors are perpendicular (orthogonal)</li>
+        <li>a · b &lt; 0 → vectors point in opposite directions (θ &gt; 90°)</li>
+        <li>a · a = ‖a‖² (dot product of vector with itself = squared magnitude)</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Cosine similarity (derived from dot product) measures similarity between document embeddings. In SVMs, the decision boundary is defined by the dot product of the weight vector and input: w·x + b = 0.</p></div>
+    </div>
+  </div>
+
+  <!-- 9. Vector Spaces -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-box-multiple" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>9. Vector Spaces</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A vector space V is a collection of vectors where you can add any two vectors and multiply any vector by a scalar, and the result stays in V. It must satisfy 8 axioms (closure, commutativity, associativity, etc.).</p></div>
+      <div class="sub-section">
+        <h3>Key concepts</h3>
+        <div class="formula-block"><div class="label">Span, Basis, Dimension</div>
+Span: set of all possible linear combinations of a set of vectors
+  span({[1,0], [0,1]}) = all of ℝ²
+
+Linear independence: no vector in the set can be written as a
+  combination of others
+  {[1,0], [0,1]} → independent ✓
+  {[1,0], [2,0]} → NOT independent (v₂ = 2×v₁)
+
+Basis: a linearly independent set that spans the space
+  Standard basis of ℝ³: {[1,0,0], [0,1,0], [0,0,1]}
+
+Dimension: number of vectors in a basis
+  ℝⁿ has dimension n
+        </div>
+      </div>
+      <div class="sub-section">
+        <h3>Null space &amp; Column space</h3>
+        <div class="condition-block"><div class="label">Important Subspaces</div><ul>
+          <li>Column space (range): all possible outputs Ax — what the matrix can produce</li>
+          <li>Null space (kernel): all vectors x where Ax = 0 — what gets mapped to zero</li>
+          <li>Rank-Nullity theorem: rank(A) + nullity(A) = n (number of columns)</li>
+        </ul></div>
+      </div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Feature vectors live in a high-dimensional vector space. PCA finds a lower-dimensional subspace that preserves most variance. Embeddings map words/images to a vector space where similar items are geometrically close.</p></div>
+    </div>
+  </div>
+
+</div></div>
+<div class="tab-panel" data-idx="3"><div class="page">
+  <div class="section-header">
+    <i class="ti ti-settings" style="font-size:28px;color:#185FA5;" aria-hidden="true"></i>
+    <div>
+      <h1>ML Fundamentals — Part 6</h1>
+      <p>Unsupervised Learning · Model Evaluation · Optimization · Regularization</p>
+    </div>
+  </div>
+
+  <!-- ── UNSUPERVISED LEARNING ── -->
+  <div class="group-header">Unsupervised Learning</div>
+
+  <!-- K-Means -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-circles" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>1. K-Means Clustering</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Partitions n data points into K clusters by iteratively assigning each point to the nearest centroid and recomputing centroids. Minimizes within-cluster sum of squared distances (inertia).</p></div>
+      <div class="formula-block"><div class="label">Algorithm</div>
+Step 1: Randomly initialize K centroids μ₁, μ₂, ..., μₖ
+
+Step 2: Assignment — assign each point to nearest centroid:
+  cᵢ = argmin_k ‖xᵢ − μₖ‖²
+
+Step 3: Update — recompute each centroid as mean of assigned points:
+  μₖ = (1/|Cₖ|) Σ_{i∈Cₖ} xᵢ
+
+Step 4: Repeat Steps 2-3 until centroids stop moving
+
+Objective (minimize):
+  J = Σₖ Σ_{i∈Cₖ} ‖xᵢ − μₖ‖²   ← inertia / WCSS
+      </div>
+      <div class="condition-block"><div class="label">Choosing K — Elbow Method</div><ul>
+        <li>Run K-means for K = 1, 2, 3, ..., 10</li>
+        <li>Plot inertia vs K — curve drops steeply then flattens</li>
+        <li>The "elbow" point = optimal K</li>
+        <li>Also use Silhouette score: measures how well each point fits its cluster vs others</li>
+        <li>Silhouette = (b − a) / max(a, b), range [−1, 1]; higher is better</li>
+      </ul></div>
+      <div class="condition-block"><div class="label">Key Conditions &amp; Limitations</div><ul>
+        <li>Must specify K upfront — K is a hyperparameter</li>
+        <li>Sensitive to initialization — use K-means++ for better starts</li>
+        <li>Assumes spherical, equal-size clusters — fails on elongated or irregular shapes</li>
+        <li>Sensitive to outliers (centroid gets pulled toward them)</li>
+        <li>Feature scaling mandatory — distances are used</li>
+        <li>Not suitable for categorical data</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example</div><p>Customer segmentation: K=3 clusters found from purchase behavior. Centroid 1: high spend + frequent → "VIP customers". Centroid 2: low spend + infrequent → "Casual browsers". Centroid 3: high frequency + low spend → "Deal hunters". Each cluster gets a targeted marketing strategy.</p></div>
+    </div>
+  </div>
+
+  <!-- Hierarchical Clustering -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-binary-tree-2" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>2. Hierarchical Clustering</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Builds a hierarchy of clusters, visualized as a dendrogram. Agglomerative (bottom-up) starts with each point as its own cluster and merges the two closest at each step. No need to specify K upfront — cut the dendrogram at the desired level.</p></div>
+      <div class="formula-block"><div class="label">Linkage Methods (how to measure cluster distance)</div>
+Single linkage:   dist(A,B) = min distance between any point in A and B
+                  → tends to create long, chain-like clusters
+
+Complete linkage: dist(A,B) = max distance between any point in A and B
+                  → tends to create compact, equal-size clusters
+
+Average linkage:  dist(A,B) = avg distance between all pairs (A,B)
+                  → balance between single and complete
+
+Ward's method:    minimizes total within-cluster variance after merge
+                  → most commonly used; similar to K-means criterion
+      </div>
+      <div class="condition-block"><div class="label">Key Properties</div><ul>
+        <li>No need to specify K — cut dendrogram at desired height</li>
+        <li>Deterministic — no random initialization (unlike K-means)</li>
+        <li>O(n²) memory, O(n³) time — doesn't scale to large datasets</li>
+        <li>Dendrogram reveals natural cluster structure visually</li>
+        <li>Ward's linkage + Euclidean distance is the most common combo</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- PCA -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrows-minimize" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>3. PCA &amp; Dimensionality Reduction</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>PCA (Principal Component Analysis) finds new axes (principal components) that capture the maximum variance in the data, in decreasing order. Projects high-dimensional data onto a lower-dimensional subspace while preserving as much information as possible.</p></div>
+      <div class="formula-block"><div class="label">PCA Algorithm Step by Step</div>
+Step 1: Standardize data (zero mean, unit variance)
+  X_std = (X − μ) / σ
+
+Step 2: Compute covariance matrix
+  Σ = (1/(n−1)) × X_stdᵀ × X_std
+
+Step 3: Compute eigenvalues λ and eigenvectors v of Σ
+  Σ × v = λ × v
+
+Step 4: Sort by eigenvalue (largest first)
+  PC1 = eigenvector with largest λ  → max variance direction
+  PC2 = eigenvector with 2nd largest λ → perpendicular to PC1
+
+Step 5: Select top k components, project data
+  X_reduced = X_std × [v₁ | v₂ | ... | vₖ]
+
+Explained variance ratio of PCᵢ = λᵢ / Σλ
+Choose k so that cumulative explained variance ≥ 95%
+      </div>
+      <div class="condition-block"><div class="label">Key Conditions</div><ul>
+        <li>Standardize features BEFORE PCA — otherwise high-variance features dominate</li>
+        <li>PCs are orthogonal (uncorrelated) by construction</li>
+        <li>PCA is a linear method — cannot capture non-linear structure (use t-SNE, UMAP instead)</li>
+        <li>Information loss is inevitable — controlled by choice of k</li>
+        <li>PCA assumes the directions of max variance are the most meaningful</li>
+        <li>Not suitable when features are already uncorrelated</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example</div><p>100 features → PCA. Eigenvalues: λ₁=45, λ₂=20, λ₃=15, λ₄=10, rest sum to 10. Total = 100. Keeping 3 PCs: (45+20+15)/100 = 80% variance explained. Keeping 4 PCs: 90%. Usually choose k where cumulative ≥ 95%. This reduces 100 features → ~5-10, removing noise and multicollinearity.</p></div>
+    </div>
+  </div>
+
+  <!-- ── MODEL EVALUATION ── -->
+  <div class="group-header">Model Evaluation</div>
+
+  <!-- Train/Test Split & Cross Validation -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-cut" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>4. Train/Test Split &amp; Cross Validation</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="formula-block"><div class="label">Train / Validation / Test Split</div>
+Typical split:  60% train / 20% val / 20% test
+             or 70% train / 30% test  (for smaller datasets)
+
+Train set:      model learns parameters (weights)
+Validation set: tune hyperparameters (learning rate, depth, K)
+Test set:       final unbiased performance estimate
+                → ONLY look at this ONCE at the very end
+
+Golden rule: NEVER use test set to make modeling decisions!
+      </div>
+      <div class="formula-block"><div class="label">K-Fold Cross Validation</div>
+1. Split data into K equal folds (typically K=5 or K=10)
+2. For i = 1 to K:
+     Train on all folds except fold i
+     Validate on fold i → record score
+3. Final score = average of K validation scores
+
+Advantage: every sample is used for both training and validation
+           → more reliable estimate than single train/val split
+
+Stratified K-Fold: maintain class proportions in each fold
+                   → use for imbalanced datasets
+
+Leave-One-Out (LOO): K=n, most expensive but lowest bias
+      </div>
+      <div class="condition-block"><div class="label">Key Rules</div><ul>
+        <li>Small dataset (&lt;1000): use K=10 cross validation</li>
+        <li>Large dataset (&gt;100K): single train/val/test split is fine</li>
+        <li>Time series: use TimeSeriesSplit — never shuffle, respect time order</li>
+        <li>Always stratify for imbalanced classification tasks</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- Bias vs Variance -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-scale" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>5. Bias vs Variance / Underfitting vs Overfitting</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="formula-block"><div class="label">Bias-Variance Decomposition</div>
+Expected error = Bias² + Variance + Irreducible Noise
+
+Bias:     error from wrong assumptions (model too simple)
+          High bias → underfitting → bad on train AND test
+
+Variance: error from sensitivity to training data fluctuations
+          High variance → overfitting → great on train, bad on test
+
+Irreducible noise: inherent randomness in data — cannot be reduced
+      </div>
+      <div class="grid2">
+        <div class="mini-card">
+          <div class="mc-label">Underfitting (High Bias)</div>
+          <div class="mc-val">Train error: HIGH<br>Val error: HIGH<br>Gap: small<br>Fix: more complex model, more features, less regularization</div>
+        </div>
+        <div class="mini-card">
+          <div class="mc-label">Overfitting (High Variance)</div>
+          <div class="mc-val">Train error: LOW<br>Val error: HIGH<br>Gap: LARGE<br>Fix: more data, regularization, simpler model, dropout</div>
+        </div>
+      </div>
+      <div class="condition-block"><div class="label">Diagnosing with Learning Curves</div><ul>
+        <li>Plot train loss and val loss vs number of training samples</li>
+        <li>High bias: both curves converge to a HIGH error value</li>
+        <li>High variance: training error is low, val error is much higher, large gap between them</li>
+        <li>Good fit: both curves converge to a LOW error, small gap</li>
+        <li>More data helps high variance models but NOT high bias models</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- Confusion Matrix & Metrics -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-layout-grid" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>6. Confusion Matrix, Precision, Recall, F1</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="sub-section">
+        <h3>Confusion matrix</h3>
+        <table class="cm-table">
+          <tr><th></th><th>Predicted Positive</th><th>Predicted Negative</th></tr>
+          <tr><th>Actual Positive</th><td class="cm-tp">TP (True Positive)</td><td class="cm-fn">FN (False Negative) Type II</td></tr>
+          <tr><th>Actual Negative</th><td class="cm-fp">FP (False Positive) Type I</td><td class="cm-tn">TN (True Negative)</td></tr>
+        </table>
+      </div>
+      <div class="formula-block"><div class="label">All Metrics Derived from CM</div>
+Accuracy  = (TP + TN) / (TP + TN + FP + FN)
+            → misleading when classes are imbalanced
+
+Precision = TP / (TP + FP)
+            → of all predicted positives, how many were actually positive?
+            → minimize FP: spam filter, fraud alert
+
+Recall    = TP / (TP + FN)   [also called Sensitivity / TPR]
+            → of all actual positives, how many did we catch?
+            → minimize FN: cancer detection, fraud detection
+
+F1 Score  = 2 × (Precision × Recall) / (Precision + Recall)
+            → harmonic mean; penalizes extreme imbalance between P and R
+            → use when both FP and FN costs matter
+
+Specificity = TN / (TN + FP)  → true negative rate
+
+Example: TP=90, FP=10, FN=5, TN=895
+  Accuracy  = (90+895)/1000 = 98.5%
+  Precision = 90/100 = 90%
+  Recall    = 90/95  = 94.7%
+  F1        = 2×(0.9×0.947)/(0.9+0.947) = 92.3%
+      </div>
+      <div class="condition-block"><div class="label">When to Use Which Metric</div><ul>
+        <li>Balanced classes + symmetric cost → Accuracy is fine</li>
+        <li>False positives costly (spam filter) → maximize Precision</li>
+        <li>False negatives costly (cancer screening) → maximize Recall</li>
+        <li>Both matter equally → use F1 Score</li>
+        <li>Imbalanced classes → never use Accuracy alone; prefer F1, AUC-ROC</li>
+        <li>Need probability threshold tuning → use ROC-AUC</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- ROC-AUC -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-chart-line" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>7. ROC Curve &amp; AUC</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The ROC (Receiver Operating Characteristic) curve plots True Positive Rate (Recall) vs False Positive Rate at every possible classification threshold. AUC (Area Under Curve) summarizes this into a single number.</p></div>
+      <div class="formula-block"><div class="label">Formulas &amp; Interpretation</div>
+TPR (Recall) = TP / (TP + FN)   ← y-axis of ROC
+FPR          = FP / (FP + TN)   ← x-axis of ROC
+
+AUC = area under the ROC curve
+
+AUC = 1.0  → perfect model (top-left corner of ROC)
+AUC = 0.5  → random model (diagonal line, no skill)
+AUC = 0.0  → perfectly wrong (worse than random)
+
+Typical interpretation:
+  0.9–1.0 → excellent
+  0.8–0.9 → good
+  0.7–0.8 → fair
+  0.6–0.7 → poor
+  0.5–0.6 → fail / random
+      </div>
+      <div class="condition-block"><div class="label">Key Insights</div><ul>
+        <li>AUC is threshold-independent → measures overall discrimination ability</li>
+        <li>AUC = probability that model ranks a random positive higher than a random negative</li>
+        <li>Better than accuracy for imbalanced datasets</li>
+        <li>PR-AUC (Precision-Recall curve): better when positive class is very rare</li>
+        <li>Choose threshold based on business cost: lower threshold → higher recall, lower precision</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- ── OPTIMIZATION ── -->
+  <div class="group-header">Optimization</div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-rocket" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>8. Gradient Descent Variants &amp; Learning Rate</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="formula-block"><div class="label">GD Variants Compared</div>
+Batch GD:    w ← w − α · (1/n) Σ ∇L(xᵢ,yᵢ)
+             uses ALL data per update → stable but slow
+
+SGD:         w ← w − α · ∇L(xᵢ, yᵢ)   [one random sample]
+             noisy but fast → can escape local minima
+
+Mini-batch:  w ← w − α · (1/B) Σ_{batch} ∇L
+             B=32 to 256 → best of both worlds (used in practice)
+
+Momentum:    v ← βv + α·∇L       β ≈ 0.9
+             w ← w − v
+             → accumulates velocity, dampens oscillations
+
+RMSProp:     s ← βs + (1−β)·(∇L)²
+             w ← w − (α/√(s+ε)) · ∇L
+             → adapts learning rate per parameter
+
+Adam:        combines Momentum + RMSProp
+             m ← β₁m + (1−β₁)·∇L       (1st moment)
+             v ← β₂v + (1−β₂)·(∇L)²    (2nd moment)
+             w ← w − α·m̂/√(v̂+ε)
+             Default: α=0.001, β₁=0.9, β₂=0.999 ← use Adam by default
+      </div>
+      <div class="condition-block"><div class="label">Cost Functions</div><ul>
+        <li>MSE: L = (1/n)Σ(y−ŷ)² → regression, penalizes large errors heavily</li>
+        <li>MAE: L = (1/n)Σ|y−ŷ| → robust to outliers, non-differentiable at 0</li>
+        <li>Huber loss: MSE for small errors, MAE for large → best of both</li>
+        <li>Binary cross-entropy: L = −[y log(ŷ) + (1−y)log(1−ŷ)] → binary classification</li>
+        <li>Categorical cross-entropy: L = −Σ yₖ log(ŷₖ) → multi-class classification</li>
+        <li>Hinge loss: L = max(0, 1 − y·ŷ) → SVM</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- ── REGULARIZATION ── -->
+  <div class="group-header">Regularization</div>
+
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-adjustments-horizontal" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>9. L1, L2 &amp; Elastic Net Regularization</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Regularization adds a penalty term to the loss function to discourage large weights — preventing overfitting by keeping the model simple. The penalty shrinks weights toward zero.</p></div>
+      <div class="formula-block"><div class="label">Three Types</div>
+L2 Ridge:    L_total = L_data + λ Σ wᵢ²
+             → penalizes squared weights
+             → shrinks ALL weights toward 0 but never to exactly 0
+             → smooth, differentiable penalty
+             → best when many small/medium features matter
+
+L1 Lasso:    L_total = L_data + λ Σ |wᵢ|
+             → penalizes absolute weights
+             → drives SOME weights to EXACTLY 0 → sparse model
+             → automatic feature selection!
+             → best when only a few features truly matter
+
+Elastic Net: L_total = L_data + λ₁ Σ|wᵢ| + λ₂ Σwᵢ²
+             → combines L1 + L2
+             → gets sparsity of L1 AND stability of L2
+             → best when features are correlated and you want some selection
+
+λ (lambda): regularization strength
+  λ = 0  → no regularization (may overfit)
+  λ → ∞  → all weights → 0 (underfit)
+  Tune λ using cross-validation
+      </div>
+      <div class="grid2">
+        <div class="mini-card">
+          <div class="mc-label">L1 (Lasso) — use when</div>
+          <div class="mc-val">Many irrelevant features · Want automatic feature selection · Sparse solution needed</div>
+        </div>
+        <div class="mini-card">
+          <div class="mc-label">L2 (Ridge) — use when</div>
+          <div class="mc-val">Most features are relevant · Features are correlated · Want stable, smooth solution</div>
+        </div>
+      </div>
+      <div class="condition-block"><div class="label">Why L1 Gives Sparsity (Intuition)</div><ul>
+        <li>L1 penalty surface is a diamond shape with sharp corners at axes</li>
+        <li>Optimization solution often lands exactly on a corner → weight = 0</li>
+        <li>L2 penalty surface is a smooth sphere → solution lands on curved surface → weights shrink but rarely hit 0</li>
+        <li>L1 is non-differentiable at w=0 → use subgradient or coordinate descent</li>
+        <li>In Bayesian terms: L1 = Laplace prior on weights; L2 = Gaussian prior</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example</div><p>Linear regression with 100 features, many irrelevant. L1 (Lasso) with λ=0.1: 85 weights become exactly 0 → model uses only 15 features. L2 (Ridge) with λ=0.1: all 100 weights shrink toward 0 but remain non-zero → model keeps all features but penalizes large coefficients. Elastic Net: selects ~30 features while keeping correlated ones grouped together.</p></div>
+    </div>
+  </div>
+
+</div></div>
+<div class="tab-panel" data-idx="4"><div class="page">
+  <div class="section-header">
+    <i class="ti ti-chart-pie" style="font-size:28px; color:#0F6E56;" aria-hidden="true"></i>
+    <div>
+      <h1>Probability — Complete Notes</h1>
+      <p>Conditional probability, Bayes, distributions, expectation & more · Click any topic to expand</p>
+    </div>
+  </div>
+
+  <!-- 1. Conditional Probability -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-filter" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>1. Conditional Probability</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The probability of event A occurring given that event B has already occurred. Written P(A|B) — "probability of A given B".</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+P(A|B) = P(A ∩ B) / P(B)      [P(B) > 0]
+
+Rearranged:  P(A ∩ B) = P(A|B) × P(B)
+             P(A ∩ B) = P(B|A) × P(A)
+      </div>
+      <div class="example-block"><div class="label">Example</div><p>A bag has 3 red and 2 blue balls. You pick one without looking. P(red) = 3/5. Now you're told "it's not blue." P(red | not blue) = P(red ∩ not-blue) / P(not-blue) = (3/5) / (3/5) = 1. Once we know it's not blue, it must be red.</p></div>
+      <div class="example-block"><div class="label">Medical Example</div><p>Disease affects 1% of people. Test is 99% accurate. P(disease) = 0.01. P(positive | disease) = 0.99. P(positive | no disease) = 0.01 (false positive). These feed directly into Bayes' theorem.</p></div>
+      <div class="condition-block"><div class="label">Key Rules</div><ul>
+        <li>Always: 0 ≤ P(A|B) ≤ 1</li>
+        <li>P(A|B) ≠ P(B|A) in general (prosecutor's fallacy!)</li>
+        <li>P(A|B) = P(A) only when A and B are independent</li>
+        <li>Conditioning "shrinks" the sample space to B</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 2. Bayes' Theorem -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-refresh" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>2. Bayes' Theorem</h2>
+        <span class="badge">Core ML Concept</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Bayes' theorem lets us reverse conditional probabilities — update our belief about a hypothesis after observing evidence.</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+P(A|B) = [ P(B|A) × P(A) ] / P(B)
+
+Where:
+  P(A)    = Prior  — belief before seeing evidence
+  P(B|A)  = Likelihood — probability of evidence given hypothesis
+  P(B)    = Marginal — total probability of evidence
+  P(A|B)  = Posterior — updated belief after evidence
+
+P(B) = P(B|A)×P(A) + P(B|¬A)×P(¬A)   ← law of total probability
+      </div>
+      <div class="example-block"><div class="label">Classic Medical Test Example</div><p>Disease prevalence = 1% → P(D) = 0.01. Test sensitivity = 99% → P(+|D) = 0.99. False positive rate = 2% → P(+|¬D) = 0.02.</p></div>
+      <div class="formula-block"><div class="label">Calculation</div>
+P(B) = 0.99×0.01 + 0.02×0.99 = 0.0099 + 0.0198 = 0.0297
+
+P(D|+) = (0.99 × 0.01) / 0.0297
+       = 0.0099 / 0.0297
+       ≈ 0.333  ← only 33% chance of disease despite positive test!
+
+Intuition: disease is rare, so most positives are false positives.
+      </div>
+      <div class="example-block"><div class="label">ML Use Case — Naive Bayes Classifier</div><p>Spam filter: P(spam | "free money") = P("free money" | spam) × P(spam) / P("free money"). We compute this for each class and pick the highest posterior — that's Naive Bayes classification.</p></div>
+      <div class="condition-block"><div class="label">Key Insights</div><ul>
+        <li>Low base rate (prior) → even a good test gives many false positives</li>
+        <li>Posterior becomes the new prior when you get more evidence</li>
+        <li>"Naive" Bayes assumes features are conditionally independent</li>
+        <li>Used in: spam filtering, medical diagnosis, text classification</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 3. Independent Events -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-circles-relation" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>3. Independent Events</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Events A and B are independent if knowing that B occurred gives zero information about whether A occurred — they don't influence each other.</p></div>
+      <div class="formula-block"><div class="label">Test for Independence</div>
+A and B are independent if:
+  P(A ∩ B) = P(A) × P(B)
+
+Equivalently:
+  P(A|B) = P(A)
+  P(B|A) = P(B)
+
+Example (independent): Two coin flips
+  P(H₁ ∩ H₂) = 0.5 × 0.5 = 0.25  ✓
+
+Example (NOT independent): Drawing cards without replacement
+  P(2nd ace | 1st ace) = 3/51 ≠ 4/52 = P(ace)
+      </div>
+      <div class="condition-block"><div class="label">Mutually Exclusive vs Independent</div><ul>
+        <li>Mutually exclusive: P(A ∩ B) = 0 — can't happen together</li>
+        <li>Independent: P(A ∩ B) = P(A)×P(B) — don't influence each other</li>
+        <li>Mutually exclusive events with P>0 are NEVER independent!</li>
+        <li>If A happens, B definitely doesn't → knowing A gives info about B</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Naive Bayes assumes features are conditionally independent given the class label. This is almost never true in practice (word co-occurrence in text), but the model still works surprisingly well — hence "naive".</p></div>
+    </div>
+  </div>
+
+  <!-- 4. Random Variables -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-variable" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>4. Random Variables</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A random variable (RV) is a function that maps outcomes of a random experiment to numerical values. It quantifies randomness.</p></div>
+      <div class="formula-block"><div class="label">Types</div>
+Discrete RV: takes countable values
+  X = number of heads in 3 coin flips → X ∈ {0, 1, 2, 3}
+
+Continuous RV: takes any value in an interval
+  Y = height of a random person → Y ∈ (0, ∞)
+      </div>
+      <div class="condition-block"><div class="label">Key Properties</div><ul>
+        <li>Discrete: described by Probability Mass Function (PMF)</li>
+        <li>Continuous: described by Probability Density Function (PDF)</li>
+        <li>Both: described by Cumulative Distribution Function (CDF)</li>
+        <li>Notation: capital letter X for RV, lowercase x for a specific value</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 5. PMF, PDF, CDF -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-chart-area" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>5. PMF, PDF &amp; CDF</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="sub-section">
+        <h3>PMF — Probability Mass Function (Discrete)</h3>
+        <div class="def-block"><div class="label">Definition</div><p>Gives the exact probability that a discrete RV equals a specific value.</p></div>
+        <div class="formula-block"><div class="label">Formula &amp; Example</div>
+P(X = x) = f(x)
+
+Conditions: f(x) ≥ 0,   Σ f(x) = 1
+
+Example: Fair die X ∈ {1,2,3,4,5,6}
+  P(X=1) = P(X=2) = ... = P(X=6) = 1/6
+  Sum = 6 × (1/6) = 1  ✓
+        </div>
+      </div>
+      <div class="sub-section">
+        <h3>PDF — Probability Density Function (Continuous)</h3>
+        <div class="def-block"><div class="label">Definition</div><p>For continuous RVs, probability at a single point = 0. PDF f(x) gives the density — probability is the area under the curve over an interval.</p></div>
+        <div class="formula-block"><div class="label">Formula &amp; Example</div>
+P(a ≤ X ≤ b) = ∫ₐᵇ f(x) dx
+
+Conditions: f(x) ≥ 0,   ∫₋∞^∞ f(x) dx = 1
+
+P(X = exact value) = 0 for continuous RV!
+P(1.5 ≤ height ≤ 1.8m) > 0  ← area under normal curve
+        </div>
+      </div>
+      <div class="sub-section">
+        <h3>CDF — Cumulative Distribution Function</h3>
+        <div class="def-block"><div class="label">Definition</div><p>CDF F(x) gives the probability that X is less than or equal to x. Works for both discrete and continuous RVs.</p></div>
+        <div class="formula-block"><div class="label">Formula &amp; Example</div>
+F(x) = P(X ≤ x)
+
+Discrete:   F(x) = Σ_{k≤x} P(X=k)
+Continuous: F(x) = ∫₋∞ˣ f(t) dt
+
+Die example:
+  F(3) = P(X≤3) = P(1)+P(2)+P(3) = 1/6+1/6+1/6 = 0.5
+
+P(a < X ≤ b) = F(b) − F(a)
+        </div>
+        <div class="condition-block"><div class="label">CDF Properties</div><ul>
+          <li>Always non-decreasing: F(x₁) ≤ F(x₂) if x₁ ≤ x₂</li>
+          <li>lim_{x→-∞} F(x) = 0   and   lim_{x→∞} F(x) = 1</li>
+          <li>PDF = derivative of CDF: f(x) = dF(x)/dx</li>
+          <li>Used to find percentiles and confidence intervals</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Expectation -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-sum" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>6. Expectation (Expected Value)</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The expected value E[X] is the weighted average of all possible values of X, weighted by their probabilities. The "long-run average" if you repeated the experiment infinitely.</p></div>
+      <div class="formula-block"><div class="label">Formulas</div>
+Discrete:   E[X] = Σ x · P(X=x)
+Continuous: E[X] = ∫₋∞^∞ x · f(x) dx
+
+Example (die):
+E[X] = 1×(1/6) + 2×(1/6) + 3×(1/6) + 4×(1/6) + 5×(1/6) + 6×(1/6)
+     = (1+2+3+4+5+6)/6 = 21/6 = 3.5
+
+E[g(X)] = Σ g(x) · P(X=x)   ← function of RV
+      </div>
+      <div class="condition-block"><div class="label">Properties (Linearity of Expectation)</div><ul>
+        <li>E[aX + b] = a·E[X] + b   (scale and shift)</li>
+        <li>E[X + Y] = E[X] + E[Y]   (always true, even if dependent!)</li>
+        <li>E[XY] = E[X]·E[Y]   ONLY if X, Y are independent</li>
+        <li>E[constant] = constant</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Loss functions are expectations: MSE = E[(y - ŷ)²]. Training minimizes the expected loss over the data distribution. Gradient descent approximates this with mini-batch expectations.</p></div>
+    </div>
+  </div>
+
+  <!-- 7. Variance and Std Dev -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrows-horizontal" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>7. Variance &amp; Standard Deviation</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Variance Var(X) measures how spread out a distribution is — the average squared deviation from the mean. Standard deviation σ is the square root of variance (same units as X).</p></div>
+      <div class="formula-block"><div class="label">Formulas</div>
+Var(X) = E[(X − μ)²] = E[X²] − (E[X])²
+       where μ = E[X]
+
+Std Dev: σ = √Var(X)
+
+Example (die): μ = 3.5
+E[X²] = 1²×(1/6) + 2²×(1/6) + ... + 6²×(1/6)
+      = (1+4+9+16+25+36)/6 = 91/6 ≈ 15.17
+Var(X) = 15.17 − 3.5² = 15.17 − 12.25 = 2.92
+σ = √2.92 ≈ 1.71
+      </div>
+      <div class="condition-block"><div class="label">Properties</div><ul>
+        <li>Var(X) ≥ 0 always (it's a squared quantity)</li>
+        <li>Var(aX + b) = a²·Var(X)   (shift b doesn't affect spread)</li>
+        <li>Var(X + Y) = Var(X) + Var(Y)   ONLY if X, Y are independent</li>
+        <li>Var(X + Y) = Var(X) + Var(Y) + 2·Cov(X,Y)   in general</li>
+        <li>High variance = wide, flat distribution; Low variance = narrow, peaked</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Variance in the bias-variance tradeoff: a high-variance model (e.g. deep decision tree) fits training data closely but varies wildly with different training sets → overfitting. Feature standardization divides by std dev to normalize spread.</p></div>
+    </div>
+  </div>
+
+  <!-- 8. Binomial Distribution -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-chart-bar" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>8. Binomial Distribution</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Models the number of successes in n independent trials, each with the same probability p of success. Written X ~ Binomial(n, p).</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+P(X = k) = C(n,k) × pᵏ × (1-p)^(n-k)
+
+Where C(n,k) = n! / (k! × (n-k)!)  ← "n choose k"
+
+E[X] = n·p
+Var(X) = n·p·(1-p)
+σ = √(n·p·(1-p))
+
+Example: 10 coin flips (p=0.5), P(exactly 6 heads)?
+P(X=6) = C(10,6) × 0.5⁶ × 0.5⁴
+        = 210 × 0.015625 × 0.0625
+        = 210 × 0.000977 ≈ 0.205  (about 20.5%)
+      </div>
+      <div class="condition-block"><div class="label">Conditions to Use Binomial</div><ul>
+        <li>Fixed number of trials n</li>
+        <li>Each trial has only 2 outcomes: success or failure</li>
+        <li>Probability p is constant across all trials</li>
+        <li>Trials are independent of each other</li>
+        <li>k ∈ {0, 1, 2, ..., n}</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Logistic regression outputs P(y=1|x) — the probability of the positive class. The likelihood function it maximizes is a product of binomial probabilities. Also used in A/B testing to model conversion rates.</p></div>
+    </div>
+  </div>
+
+  <!-- 9. Normal Distribution -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-wave-sine" style="font-size:18px;color:#0F6E56;" aria-hidden="true"></i>
+        <h2>9. Normal Distribution</h2>
+        <span class="badge">Most Important</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The bell-shaped distribution defined by mean μ and variance σ². Written X ~ N(μ, σ²). Symmetric around μ, extends to ±∞. The most important distribution in statistics and ML.</p></div>
+      <div class="formula-block"><div class="label">PDF Formula</div>
+f(x) = (1 / (σ√(2π))) × exp(−(x−μ)² / (2σ²))
+
+Standard Normal: Z ~ N(0, 1)  [μ=0, σ=1]
+Standardize:     Z = (X − μ) / σ
+
+The 68-95-99.7 Rule:
+  P(μ−σ  &lt; X &lt; μ+σ)  = 68.27%  (1 std dev)
+  P(μ−2σ &lt; X &lt; μ+2σ) = 95.45%  (2 std dev)
+  P(μ−3σ &lt; X &lt; μ+3σ) = 99.73%  (3 std dev)
+      </div>
+      <div class="example-block"><div class="label">Example</div><p>Heights of adults ~ N(170cm, 10²). P(160 &lt; height &lt; 180) = P(−1 &lt; Z &lt; 1) ≈ 68%. P(height &gt; 190) = P(Z &gt; 2) ≈ 2.28%.</p></div>
+      <div class="condition-block"><div class="label">Key Properties</div><ul>
+        <li>Symmetric: mean = median = mode = μ</li>
+        <li>Skewness = 0, Kurtosis = 3 (mesokurtic)</li>
+        <li>Sum of independent normals is normal: X~N(μ₁,σ₁²) + Y~N(μ₂,σ₂²) = N(μ₁+μ₂, σ₁²+σ₂²)</li>
+        <li>Central Limit Theorem → sample means are approximately normal</li>
+        <li>Fully characterized by just μ and σ</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Cases</div><p>Weight initialization in neural networks often uses N(0, small σ²). Gaussian Naive Bayes assumes features follow normal distributions within each class. Many ML algorithms assume normally distributed residuals (linear regression). Anomaly detection: points beyond 3σ are flagged as outliers.</p></div>
+      <div class="grid2">
+        <div class="mini-card">
+          <div class="mc-label">Standard normal P(Z &lt; 1.96)</div>
+          <div class="mc-val">≈ 0.975 → 95% CI uses ±1.96σ</div>
+        </div>
+        <div class="mini-card">
+          <div class="mc-label">Standard normal P(Z &lt; 2.576)</div>
+          <div class="mc-val">≈ 0.995 → 99% CI uses ±2.576σ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+<div class="tab-panel" data-idx="5"><div class="page">
+  <div class="section-header">
+    <i class="ti ti-chart-dots" style="font-size:28px;color:#534AB7;" aria-hidden="true"></i>
+    <div>
+      <h1>Statistics — Complete Notes</h1>
+      <p>Mean/median/mode, hypothesis testing, CLT, sampling & more · Click any topic to expand</p>
+    </div>
+  </div>
+
+  <!-- 1. Mean, Median, Mode -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-math-avg" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>1. Mean, Median &amp; Mode</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="sub-section">
+        <h3>Mean (Average)</h3>
+        <div class="def-block"><div class="label">Definition</div><p>The arithmetic average. Sum of all values divided by the count. Most sensitive to outliers.</p></div>
+        <div class="formula-block"><div class="label">Formula</div>
+Population mean: μ = (Σ xᵢ) / N
+Sample mean:     x̄ = (Σ xᵢ) / n
+
+Dataset: [2, 4, 4, 6, 8, 100]
+Mean = (2+4+4+6+8+100)/6 = 124/6 ≈ 20.7
+← Pulled heavily by outlier 100
+        </div>
+      </div>
+      <div class="sub-section">
+        <h3>Median</h3>
+        <div class="def-block"><div class="label">Definition</div><p>The middle value when data is sorted. Robust to outliers — half the values lie above, half below.</p></div>
+        <div class="formula-block"><div class="label">Formula</div>
+Odd n:  median = value at position (n+1)/2
+Even n: median = average of values at n/2 and n/2+1
+
+Dataset sorted: [2, 4, 4, 6, 8, 100]   n=6
+Median = (4 + 6) / 2 = 5.0
+← Not affected by the outlier 100
+        </div>
+      </div>
+      <div class="sub-section">
+        <h3>Mode</h3>
+        <div class="def-block"><div class="label">Definition</div><p>The most frequently occurring value. Can be used for categorical data. A dataset can have 0, 1, or multiple modes.</p></div>
+        <div class="formula-block"><div class="label">Example</div>
+Dataset: [2, 4, 4, 6, 8, 100]
+Mode = 4  (appears twice, all others once)
+
+Bimodal: [1,1,1,5,9,9,9]  → modes: 1 and 9
+No mode: [1,2,3,4,5]  → all appear once
+        </div>
+      </div>
+      <div class="condition-block"><div class="label">When to Use Which</div><ul>
+        <li>Mean: symmetric data with no extreme outliers (e.g. test scores)</li>
+        <li>Median: skewed data or when outliers present (e.g. income, house prices)</li>
+        <li>Mode: categorical data (e.g. most common blood type) or finding peaks</li>
+        <li>Skewed right (tail right): mean &gt; median &gt; mode</li>
+        <li>Skewed left (tail left): mean &lt; median &lt; mode</li>
+        <li>Symmetric: mean ≈ median ≈ mode</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Missing value imputation: use mean for normally distributed numerical features, median for skewed features (salary, house price), mode for categorical features. Using mean on skewed data introduces bias.</p></div>
+    </div>
+  </div>
+
+  <!-- 2. Covariance -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrows-diagonal" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>2. Covariance</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Covariance measures how two variables change together. Positive covariance → both increase together. Negative → one increases while the other decreases.</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+Population: Cov(X,Y) = E[(X−μₓ)(Y−μᵧ)]
+Sample:     Cov(X,Y) = Σ(xᵢ−x̄)(yᵢ−ȳ) / (n−1)
+
+Note: divide by (n−1) for sample — Bessel's correction
+
+Example:
+X = [1, 2, 3, 4, 5]   x̄ = 3
+Y = [2, 4, 5, 4, 5]   ȳ = 4
+
+Σ(xᵢ−x̄)(yᵢ−ȳ) = (−2)(−2)+(−1)(0)+(0)(1)+(1)(0)+(2)(1)
+                = 4 + 0 + 0 + 0 + 2 = 6
+Cov(X,Y) = 6 / (5−1) = 1.5  → positive covariance ✓
+      </div>
+      <div class="condition-block"><div class="label">Properties</div><ul>
+        <li>Cov(X, X) = Var(X) — covariance with itself is variance</li>
+        <li>Cov(X, Y) = Cov(Y, X) — symmetric</li>
+        <li>Cov(aX, bY) = ab·Cov(X, Y)</li>
+        <li>Units: product of units of X and Y (hard to interpret scale)</li>
+        <li>Cov = 0 does NOT always mean independent (only for normal distributions)</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>The covariance matrix Σ is central to PCA. Its eigenvalues = variance explained per direction; eigenvectors = principal component directions. Shape: n_features × n_features.</p></div>
+    </div>
+  </div>
+
+  <!-- 3. Correlation -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-trending-up" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>3. Correlation</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Pearson correlation r is the normalized version of covariance — scaled to always be between −1 and +1. It measures linear relationship strength, independent of units.</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+r = Cov(X, Y) / (σₓ × σᵧ)
+
+r = Σ(xᵢ−x̄)(yᵢ−ȳ) / √[Σ(xᵢ−x̄)² × Σ(yᵢ−ȳ)²]
+
+From earlier example:
+σₓ = √[(4+1+0+1+4)/4] = √2.5 ≈ 1.581
+σᵧ = √[(4+0+1+0+1)/4] = √1.5 ≈ 1.225
+r = 1.5 / (1.581 × 1.225) ≈ 0.775  → strong positive
+      </div>
+      <div class="condition-block"><div class="label">Interpreting r</div><ul>
+        <li>r = +1.0 → perfect positive linear relationship</li>
+        <li>r = −1.0 → perfect negative linear relationship</li>
+        <li>r = 0.0 → no linear relationship (could be non-linear!)</li>
+        <li>|r| &gt; 0.7 → strong; 0.4–0.7 → moderate; &lt; 0.4 → weak</li>
+        <li>Correlation ≠ Causation (ice cream and drowning are correlated!)</li>
+        <li>Sensitive to outliers — one extreme point can distort r significantly</li>
+      </ul></div>
+      <div class="grid3">
+        <div class="mini-card"><div class="mc-label">Strong positive</div><div class="mc-val">r ≈ 0.9: height vs weight</div></div>
+        <div class="mini-card"><div class="mc-label">No correlation</div><div class="mc-val">r ≈ 0: shoe size vs IQ</div></div>
+        <div class="mini-card"><div class="mc-label">Strong negative</div><div class="mc-val">r ≈ −0.8: price vs demand</div></div>
+      </div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Feature selection: drop highly correlated features (|r| &gt; 0.9) to reduce multicollinearity. Correlation heatmaps guide which features to keep. Spearman correlation (rank-based) handles non-linear monotonic relationships.</p></div>
+    </div>
+  </div>
+
+  <!-- 4. Hypothesis Testing -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-test-pipe" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>4. Hypothesis Testing</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A formal statistical procedure to decide whether sample data provides enough evidence to reject a default assumption (null hypothesis H₀) in favor of an alternative (H₁).</p></div>
+      <div class="sub-section">
+        <h3>Step-by-step process</h3>
+        <div class="formula-block"><div class="label">The 5 Steps</div>
+Step 1: State hypotheses
+  H₀ (null):        μ = 50  (no effect / no difference)
+  H₁ (alternative): μ ≠ 50  (two-tailed) or μ > 50 (one-tailed)
+
+Step 2: Choose significance level α
+  Typically α = 0.05 (5% chance of wrongly rejecting H₀)
+
+Step 3: Compute test statistic
+  t = (x̄ − μ₀) / (s / √n)    ← t-test statistic
+  z = (x̄ − μ₀) / (σ / √n)    ← z-test (when σ known)
+
+Step 4: Find p-value
+  p-value = P(observing this result | H₀ is true)
+
+Step 5: Decision rule
+  p ≤ α → Reject H₀  (result is statistically significant)
+  p > α → Fail to reject H₀  (insufficient evidence)
+        </div>
+      </div>
+      <div class="sub-section">
+        <h3>Types of errors</h3>
+        <div class="condition-block"><div class="label">Type I and Type II Errors</div><ul>
+          <li>Type I error (α): Reject H₀ when it is actually true — false positive</li>
+          <li>Type II error (β): Fail to reject H₀ when it is actually false — false negative</li>
+          <li>Power = 1 − β: probability of correctly detecting a real effect</li>
+          <li>Reducing α → increases β (tradeoff between error types)</li>
+          <li>Increasing sample size n → reduces both errors</li>
+        </ul></div>
+      </div>
+      <div class="example-block"><div class="label">Example</div><p>Testing if a new drug reduces blood pressure. H₀: no reduction (μ_new = μ_old). H₁: reduction exists (μ_new &lt; μ_old). Collect sample, compute t-statistic, get p = 0.03. Since 0.03 &lt; 0.05 = α, reject H₀ → drug is effective at 5% significance level.</p></div>
+      <div class="alert-block"><div class="label">Common Misconception</div><p>p-value is NOT "the probability that H₀ is true." It is the probability of observing data this extreme (or more) assuming H₀ is true. A p-value of 0.05 does not mean there's a 95% chance the alternative is true.</p></div>
+      <div class="condition-block"><div class="label">Common Tests</div><ul>
+        <li>One-sample t-test: compare sample mean to known value</li>
+        <li>Two-sample t-test: compare means of two groups</li>
+        <li>Chi-square test: test independence of categorical variables</li>
+        <li>ANOVA: compare means across 3+ groups</li>
+        <li>Z-test: use when n &gt; 30 or population σ is known</li>
+      </ul></div>
+    </div>
+  </div>
+
+  <!-- 5. Confidence Intervals -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-arrows-left-right" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>5. Confidence Intervals</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A confidence interval (CI) is a range of values that is likely to contain the true population parameter. A 95% CI means: if we repeated this study 100 times, ~95 of those intervals would contain the true parameter.</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+CI = x̄  ±  z* × (σ / √n)    ← when σ known
+CI = x̄  ±  t* × (s / √n)    ← when σ unknown (use t-distribution)
+
+Common z* values:
+  90% CI → z* = 1.645
+  95% CI → z* = 1.960
+  99% CI → z* = 2.576
+
+Example: x̄=100, s=15, n=25, 95% CI
+  Margin of error = 1.96 × (15/√25) = 1.96 × 3 = 5.88
+  CI = (100 − 5.88, 100 + 5.88) = (94.12, 105.88)
+      </div>
+      <div class="condition-block"><div class="label">Key Rules</div><ul>
+        <li>Wider CI = more uncertainty (small n, large σ, high confidence level)</li>
+        <li>Narrower CI = more precision (large n, small σ, lower confidence level)</li>
+        <li>Doubling n → CI width shrinks by factor √2 ≈ 1.41</li>
+        <li>A 95% CI that does NOT contain 0 → statistically significant at α=0.05</li>
+        <li>Use t* instead of z* when n &lt; 30 or σ is unknown</li>
+      </ul></div>
+      <div class="alert-block"><div class="label">Common Misconception</div><p>"There is a 95% probability that the true mean lies in this interval" is WRONG. The parameter is fixed — it's either in the interval or not. The 95% refers to the long-run coverage of the procedure, not the probability for one specific interval.</p></div>
+    </div>
+  </div>
+
+  <!-- 6. Central Limit Theorem -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-chart-bell-curve" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>6. Central Limit Theorem (CLT)</h2>
+        <span class="badge">Most Important</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>The CLT states that the sampling distribution of the sample mean x̄ approaches a normal distribution as sample size n increases — regardless of the shape of the original population distribution.</p></div>
+      <div class="formula-block"><div class="label">Statement</div>
+If X₁, X₂, ..., Xₙ are i.i.d. with mean μ and variance σ²:
+
+  x̄ ~ N(μ,  σ²/n)   approximately, for large n
+
+Standard error of mean: SE = σ / √n
+
+Key: as n ↑, SE ↓  → sample mean gets closer to true mean
+
+Rule of thumb: n ≥ 30 is usually sufficient
+(need larger n if original distribution is very skewed)
+      </div>
+      <div class="example-block"><div class="label">Intuitive Example</div><p>Roll a single die (uniform distribution, not normal). Now roll 30 dice and take the average — repeat this 10,000 times. The histogram of those averages will look like a perfect bell curve centered at 3.5, regardless of the die's uniform shape. That's CLT in action.</p></div>
+      <div class="condition-block"><div class="label">Why CLT is Powerful</div><ul>
+        <li>Justifies using z-tests and t-tests on non-normal data</li>
+        <li>Makes confidence intervals valid even for skewed populations</li>
+        <li>Explains why so many real-world phenomena appear normally distributed</li>
+        <li>Foundation for most classical statistical inference</li>
+        <li>i.i.d. required: independent and identically distributed samples</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Mini-batch gradient descent relies on CLT — even if individual sample losses are noisy and non-normal, the average gradient over a batch is approximately normal, making convergence predictable. Also justifies using mean metrics (mean accuracy, mean loss) to evaluate models.</p></div>
+    </div>
+  </div>
+
+  <!-- 7. Sampling Techniques -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-git-branch" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>7. Sampling Techniques</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="sub-section">
+        <h3>Main sampling methods</h3>
+        <div class="formula-block"><div class="label">Types with Examples</div>
+1. Simple Random Sampling
+   Every individual has equal probability of selection.
+   Example: randomly pick 100 students from a school of 1000.
+   Pros: unbiased. Cons: may miss rare subgroups.
+
+2. Stratified Sampling
+   Divide population into strata, sample from each.
+   Example: 60% adults / 40% teens → sample 60 adults, 40 teens.
+   Pros: ensures representation of subgroups.
+
+3. Systematic Sampling
+   Pick every k-th element after a random start.
+   Example: list of 1000, pick every 10th → 100 samples.
+   Pros: easy to implement. Cons: periodic patterns can bias.
+
+4. Cluster Sampling
+   Divide into clusters, randomly select entire clusters.
+   Example: pick 5 random schools, survey all students in them.
+   Pros: cost-effective for large geographic areas.
+
+5. Bootstrap Sampling
+   Sample WITH replacement from your own dataset.
+   Used to estimate variability of statistics.
+        </div>
+      </div>
+      <div class="condition-block"><div class="label">Sampling Bias — What to Avoid</div><ul>
+        <li>Selection bias: some groups are systematically excluded</li>
+        <li>Survivorship bias: only looking at "survivors" (e.g. only profitable companies)</li>
+        <li>Convenience sampling: using whoever is easily available → usually biased</li>
+        <li>Non-response bias: certain types of people don't respond to surveys</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Bootstrap sampling powers Random Forests — each tree trains on a bootstrap sample of the training data (sampling with replacement). Stratified sampling is used when classes are imbalanced to ensure the test set has the same class ratio as the full dataset.</p></div>
+    </div>
+  </div>
+
+  <!-- 8. Outliers -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-alert-circle" style="font-size:18px;color:#534AB7;" aria-hidden="true"></i>
+        <h2>8. Outliers</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Outliers are data points that differ significantly from other observations. They can be caused by measurement error, data entry mistakes, or genuinely rare events.</p></div>
+      <div class="sub-section">
+        <h3>Detection methods</h3>
+        <div class="formula-block"><div class="label">Methods</div>
+1. IQR Method (Tukey's fences) — most common
+   Q1 = 25th percentile,  Q3 = 75th percentile
+   IQR = Q3 − Q1
+   Lower fence = Q1 − 1.5 × IQR
+   Upper fence = Q3 + 1.5 × IQR
+   Points outside fences → outliers
+
+   Example: data = [1,2,3,4,5,6,7,8,9,100]
+   Q1=2.75, Q3=7.25, IQR=4.5
+   Lower = 2.75 − 6.75 = −4.0
+   Upper = 7.25 + 6.75 = 14.0
+   → 100 is an outlier ✓
+
+2. Z-Score Method
+   Z = (x − μ) / σ
+   |Z| > 3 → outlier (beyond 3 standard deviations)
+   Assumes normal distribution
+
+3. Visualization: Box plots, scatter plots, histograms
+        </div>
+      </div>
+      <div class="condition-block"><div class="label">How to Handle Outliers</div><ul>
+        <li>Remove: if caused by data entry error or equipment malfunction</li>
+        <li>Cap (Winsorization): replace with upper/lower fence values</li>
+        <li>Transform: log transform reduces impact of extreme values</li>
+        <li>Keep: if genuinely rare but valid observations (fraud, sensor spike)</li>
+        <li>Separate model: model outlier behavior differently from the main data</li>
+      </ul></div>
+      <div class="example-block"><div class="label">ML Use Case</div><p>Outliers distort linear regression coefficients severely. Tree-based models (Random Forest, XGBoost) are naturally robust to outliers. For neural networks and linear models, outlier removal or capping is essential before training. Outlier detection itself is a task: IsolationForest, LOF, DBSCAN are common approaches.</p></div>
+    </div>
+  </div>
+
+</div></div>
+<div class="tab-panel" data-idx="6"><div class="page">
+  <div class="section-header">
+    <i class="ti ti-brain" style="font-size:28px;color:#185FA5;" aria-hidden="true"></i>
+    <div>
+      <h1>Supervised Learning — Complete Notes</h1>
+      <p>Linear/Logistic Regression, KNN, Naive Bayes, Decision Trees, Random Forests, SVM · Click to expand</p>
+    </div>
+  </div>
+
+  <!-- 1. Linear Regression -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-trending-up" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>1. Linear Regression</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Models the relationship between a continuous target variable y and one or more input features X by fitting a straight line (or hyperplane). Predicts a continuous output.</p></div>
+      <div class="formula-block"><div class="label">Model &amp; Cost Function</div>
+Hypothesis:    ŷ = w₁x₁ + w₂x₂ + ... + wₙxₙ + b
+               ŷ = Xw + b   (matrix form)
+
+Cost (MSE):    L = (1/n) Σ (yᵢ − ŷᵢ)²
+
+Closed-form solution (Normal Equation):
+               w = (XᵀX)⁻¹ Xᵀy
+
+Gradient descent update:
+               w ← w − α · (2/n) Xᵀ(Xw − y)
+      </div>
+      <div class="sub-section">
+        <h3>Assumptions (must hold for valid inference)</h3>
+        <div class="condition-block"><div class="label">LINE Assumptions</div><ul>
+          <li>Linearity: relationship between X and y is linear</li>
+          <li>Independence: observations are independent of each other</li>
+          <li>Normality: residuals (errors) are normally distributed</li>
+          <li>Equal variance (homoscedasticity): residual variance is constant across X</li>
+          <li>No multicollinearity: features are not highly correlated with each other</li>
+        </ul></div>
+      </div>
+      <div class="example-block"><div class="label">Example</div><p>Predicting house price: ŷ = 200×(sqft) + 15000×(bedrooms) − 5000×(age) + 50000. If sqft=1500, bedrooms=3, age=10: ŷ = 300000 + 45000 − 50000 + 50000 = $345,000.</p></div>
+      <div class="pros-cons">
+        <div class="pros"><div class="pc-label">Pros</div><ul><li>Simple and interpretable</li><li>Fast to train</li><li>Works well when linear relationship exists</li><li>Closed-form solution available</li></ul></div>
+        <div class="cons"><div class="pc-label">Cons</div><ul><li>Assumes linearity (fails on complex data)</li><li>Sensitive to outliers</li><li>Fails when multicollinearity is high</li><li>Underfits complex patterns</li></ul></div>
+      </div>
+      <div class="formula-block"><div class="label">R² Score (Goodness of Fit)</div>
+R² = 1 − SS_res / SS_tot
+   = 1 − Σ(yᵢ−ŷᵢ)² / Σ(yᵢ−ȳ)²
+
+R²=1.0 → perfect fit
+R²=0.0 → model no better than predicting mean
+R²&lt;0   → model worse than just predicting mean
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Logistic Regression -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-adjustments" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>2. Logistic Regression</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>Despite the name, logistic regression is a classification algorithm. It uses the sigmoid function to squash a linear combination of features into a probability between 0 and 1, then applies a threshold to classify.</p></div>
+      <div class="formula-block"><div class="label">Model &amp; Loss</div>
+Linear combo:  z = w·x + b
+Sigmoid:       σ(z) = 1 / (1 + e⁻ᶻ)  →  output ∈ (0, 1)
+Prediction:    ŷ = P(y=1 | x) = σ(w·x + b)
+Decision:      class = 1 if ŷ ≥ 0.5, else 0
+
+Loss (Binary Cross-Entropy / Log Loss):
+L = −(1/n) Σ [ yᵢ log(ŷᵢ) + (1−yᵢ) log(1−ŷᵢ) ]
+
+Why not MSE? MSE creates non-convex loss for classification →
+log loss is convex → guaranteed convergence ✓
+      </div>
+      <div class="condition-block"><div class="label">Key Conditions &amp; Properties</div><ul>
+        <li>Output is a probability — always between 0 and 1</li>
+        <li>Decision boundary is linear: w·x + b = 0</li>
+        <li>Threshold 0.5 is default but can be tuned (e.g. for imbalanced classes)</li>
+        <li>Assumes linear separability in feature space</li>
+        <li>Multiclass: use Softmax + categorical cross-entropy (One-vs-Rest or multinomial)</li>
+        <li>Regularization: add L1 (Lasso) or L2 (Ridge) to prevent overfitting</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example</div><p>Spam detection: z = 0.8×(freq_"free") + 0.6×(freq_"money") − 2.1. For an email with many "free" and "money" words: z = 3.2 → σ(3.2) = 0.96 → 96% probability of spam → classified as spam.</p></div>
+      <div class="pros-cons">
+        <div class="pros"><div class="pc-label">Pros</div><ul><li>Outputs calibrated probabilities</li><li>Fast, interpretable coefficients</li><li>Convex loss → reliable convergence</li><li>Works well on linearly separable data</li></ul></div>
+        <div class="cons"><div class="pc-label">Cons</div><ul><li>Assumes linear decision boundary</li><li>Fails on complex/non-linear patterns</li><li>Requires feature scaling</li><li>Sensitive to irrelevant features</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. K-Nearest Neighbors -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-users" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>3. K-Nearest Neighbors (KNN)</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A lazy, non-parametric algorithm — it stores all training data and makes predictions by finding the K closest training points to a new data point. "You are the average of your K closest neighbors."</p></div>
+      <div class="formula-block"><div class="label">Algorithm &amp; Distance Metrics</div>
+Algorithm:
+  1. Store all training points
+  2. For new point x, compute distance to all training points
+  3. Pick K nearest neighbors
+  4. Classification: majority vote among K neighbors
+  5. Regression: average of K neighbors' values
+
+Distance metrics:
+  Euclidean: d = √(Σ(xᵢ−yᵢ)²)   ← most common
+  Manhattan: d = Σ|xᵢ−yᵢ|
+  Minkowski: d = (Σ|xᵢ−yᵢ|ᵖ)^(1/p)  generalizes both
+
+Choosing K:
+  K=1  → overfits (very jagged boundary)
+  K=n  → underfits (always predicts majority class)
+  Best K → use cross-validation; typically odd K to avoid ties
+      </div>
+      <div class="condition-block"><div class="label">Key Conditions</div><ul>
+        <li>Feature scaling is mandatory — distances are meaningless otherwise</li>
+        <li>Curse of dimensionality: KNN degrades in high dimensions (distances become uniform)</li>
+        <li>No training phase — all compute happens at prediction time (lazy learner)</li>
+        <li>Large datasets → very slow prediction O(n·d) per query</li>
+        <li>Works best: small datasets, low dimensions, clear cluster structure</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example</div><p>Classifying a new flower with petal_length=5.1, petal_width=1.8. K=3. The 3 nearest training points are: [Virginica, Virginica, Versicolor]. Majority vote → predict Virginica.</p></div>
+      <div class="pros-cons">
+        <div class="pros"><div class="pc-label">Pros</div><ul><li>No training time</li><li>Naturally handles multi-class</li><li>Non-linear decision boundaries</li><li>Simple to understand and implement</li></ul></div>
+        <div class="cons"><div class="pc-label">Cons</div><ul><li>Slow prediction on large data</li><li>High memory (stores all data)</li><li>Fails in high dimensions</li><li>Sensitive to irrelevant features</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. Naive Bayes -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-filter" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>4. Naive Bayes</h2>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A probabilistic classifier based on Bayes' theorem with a "naive" assumption: all features are conditionally independent given the class label. Despite this almost-never-true assumption, it works surprisingly well in practice.</p></div>
+      <div class="formula-block"><div class="label">Formula</div>
+P(class | x₁,x₂,...,xₙ) ∝ P(class) × Π P(xᵢ | class)
+
+Pick class with highest posterior:
+ŷ = argmax_c [ log P(c) + Σ log P(xᵢ | c) ]
+
+(use log to avoid underflow from multiplying tiny probabilities)
+
+Variants:
+  Gaussian NB:    P(xᵢ|c) follows Normal distribution
+                  → for continuous features
+  Multinomial NB: P(xᵢ|c) follows Multinomial
+                  → for word counts in text
+  Bernoulli NB:   P(xᵢ|c) is 0 or 1
+                  → for binary features
+      </div>
+      <div class="condition-block"><div class="label">Conditions &amp; Tricks</div><ul>
+        <li>Naive assumption: P(x₁,x₂|c) = P(x₁|c)×P(x₂|c) — rarely true but often sufficient</li>
+        <li>Laplace smoothing: add 1 to all counts to avoid P=0 for unseen words</li>
+        <li>Log-sum trick: add log-probabilities instead of multiplying to prevent underflow</li>
+        <li>Requires no feature scaling (probability-based, not distance-based)</li>
+        <li>Very fast training: just count frequencies / compute Gaussian parameters</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example — Spam Filter</div><p>P(spam)=0.3, P(ham)=0.7. Email contains "free" and "win". P("free"|spam)=0.8, P("win"|spam)=0.7, P("free"|ham)=0.1, P("win"|ham)=0.05. Score spam = 0.3×0.8×0.7 = 0.168. Score ham = 0.7×0.1×0.05 = 0.0035. Spam wins → classified as spam.</p></div>
+      <div class="pros-cons">
+        <div class="pros"><div class="pc-label">Pros</div><ul><li>Extremely fast training</li><li>Works well on small data</li><li>Excellent for text classification</li><li>Handles missing values naturally</li></ul></div>
+        <div class="cons"><div class="pc-label">Cons</div><ul><li>Independence assumption rarely holds</li><li>Poor probability estimates</li><li>Continuous features need distribution assumption</li><li>Feature correlations ignored</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Decision Trees -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-binary-tree" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>5. Decision Trees</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>A tree-structured model where each internal node is a feature-based decision (split), each branch is an outcome of that decision, and each leaf node is a prediction. Mimics human decision-making logic.</p></div>
+      <div class="sub-section">
+        <h3>Splitting criteria</h3>
+        <div class="formula-block"><div class="label">Gini Impurity &amp; Entropy</div>
+Gini Impurity (used in CART):
+  Gini = 1 − Σ pᵢ²
+  Range: 0 (pure) to 0.5 (max impurity for binary)
+  Gini = 0 → all samples belong to one class (perfect split)
+
+Example: node with 80% class A, 20% class B
+  Gini = 1 − (0.8² + 0.2²) = 1 − (0.64+0.04) = 0.32
+
+Entropy (used in ID3, C4.5):
+  H = −Σ pᵢ log₂(pᵢ)
+  Range: 0 (pure) to 1 (max impurity for binary)
+
+  H = −(0.8 log₂0.8 + 0.2 log₂0.2)
+    = −(−0.257 + −0.464) = 0.721
+
+Information Gain = H(parent) − weighted avg H(children)
+Best split = feature with highest Information Gain
+        </div>
+      </div>
+      <div class="condition-block"><div class="label">Tree Building Algorithm (CART)</div><ul>
+        <li>Start at root with all data</li>
+        <li>For each feature and threshold: compute Gini/entropy of split</li>
+        <li>Choose split that maximizes information gain</li>
+        <li>Recursively split each child node</li>
+        <li>Stop when: max depth reached, min samples per leaf, or pure node</li>
+        <li>Leaf node predicts: majority class (classification) or mean (regression)</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example</div><p>Predicting loan default. Root split: Income &lt; 30K? If yes → high risk (leaf). If no → split on Credit Score &lt; 600? If yes → medium risk. If no → low risk. Each path through the tree is an interpretable rule.</p></div>
+      <div class="condition-block"><div class="label">Preventing Overfitting</div><ul>
+        <li>max_depth: limit how deep the tree can grow</li>
+        <li>min_samples_split: minimum samples needed to split a node</li>
+        <li>min_samples_leaf: minimum samples in a leaf node</li>
+        <li>max_features: consider only subset of features at each split</li>
+        <li>Pruning: grow full tree then cut back branches using validation set</li>
+      </ul></div>
+      <div class="pros-cons">
+        <div class="pros"><div class="pc-label">Pros</div><ul><li>Highly interpretable (if-then rules)</li><li>No feature scaling needed</li><li>Handles mixed data types</li><li>Captures non-linear patterns</li></ul></div>
+        <div class="cons"><div class="pc-label">Cons</div><ul><li>Prone to overfitting</li><li>Unstable (small data change = different tree)</li><li>Biased toward high-cardinality features</li><li>Weak as standalone model</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Random Forests -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-trees" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>6. Random Forests</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>An ensemble of decision trees, each trained on a bootstrap sample of the data and using a random subset of features at each split. Predictions are made by majority vote (classification) or averaging (regression). "Wisdom of the crowd" for decision trees.</p></div>
+      <div class="formula-block"><div class="label">Algorithm</div>
+For i = 1 to n_trees:
+  1. Bootstrap sample Dᵢ from training data (sample WITH replacement)
+  2. Build decision tree on Dᵢ, but at each split:
+     → only consider random subset of m features
+     → m ≈ √(total features) for classification
+     → m ≈ total_features/3 for regression
+  3. Grow tree to full depth (no pruning)
+
+Prediction:
+  Classification: ŷ = majority vote of all tree predictions
+  Regression:     ŷ = average of all tree predictions
+
+Out-of-Bag (OOB) Error:
+  ~37% of data is NOT in each bootstrap sample
+  → use those samples to estimate test error without separate val set
+      </div>
+      <div class="condition-block"><div class="label">Key Concepts</div><ul>
+        <li>Bagging (Bootstrap Aggregating): reduces variance by averaging noisy models</li>
+        <li>Random feature subsets: decorrelates the trees (key difference from plain bagging)</li>
+        <li>More trees → better (but diminishing returns after ~100-500 trees)</li>
+        <li>Feature importance: average reduction in impurity across all splits for that feature</li>
+        <li>Hyperparameters: n_estimators, max_depth, max_features, min_samples_leaf</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Why Random Features Help</div><p>Without random feature subsets, all trees would look similar (dominant features always win) and be highly correlated → averaging correlated predictions gives little benefit. By forcing each tree to consider different features, trees make diverse mistakes → averaging them out produces a much better model.</p></div>
+      <div class="pros-cons">
+        <div class="pros"><div class="pc-label">Pros</div><ul><li>Very high accuracy in practice</li><li>Robust to outliers and noise</li><li>No feature scaling needed</li><li>Built-in feature importance</li><li>OOB error estimate for free</li></ul></div>
+        <div class="cons"><div class="pc-label">Cons</div><ul><li>Not interpretable (black box)</li><li>Slow prediction (100s of trees)</li><li>Large memory footprint</li><li>Struggles with very sparse features</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. SVM -->
+  <div class="topic-card">
+    <div class="topic-header" onclick="toggle(this)">
+      <div class="topic-title">
+        <i class="ti ti-separator" style="font-size:18px;color:#185FA5;" aria-hidden="true"></i>
+        <h2>7. Support Vector Machines (SVM)</h2>
+        <span class="badge">Frequently Asked</span>
+      </div>
+      <i class="ti ti-chevron-down chevron" aria-hidden="true"></i>
+    </div>
+    <div class="topic-body">
+      <div class="def-block"><div class="label">Definition</div><p>SVM finds the hyperplane that maximizes the margin between two classes. The margin is the distance between the hyperplane and the nearest data points of each class — those nearest points are the support vectors.</p></div>
+      <div class="formula-block"><div class="label">Key Equations</div>
+Decision boundary:  w·x + b = 0
+Margin width:       2 / ‖w‖
+Objective:          minimize ‖w‖²   (maximize margin)
+Constraint:         yᵢ(w·xᵢ + b) ≥ 1  for all i
+
+Support vectors: points where yᵢ(w·xᵢ + b) = 1
+  → only these points define the boundary!
+  → removing non-support-vector points doesn't change the model
+
+Soft margin (C parameter):
+  Allow some misclassifications for better generalization
+  Large C  → smaller margin, fewer errors, may overfit
+  Small C  → larger margin, more errors, may underfit
+      </div>
+      <div class="sub-section">
+        <h3>Kernel trick</h3>
+        <div class="formula-block"><div class="label">Kernels for Non-Linear Data</div>
+Instead of mapping features explicitly to high-dim space,
+use a kernel K(xᵢ, xⱼ) = φ(xᵢ)·φ(xⱼ)
+
+Common kernels:
+  Linear:      K(x,z) = x·z          → linear boundary
+  Polynomial:  K(x,z) = (x·z + c)ᵈ  → polynomial boundary
+  RBF/Gaussian:K(x,z) = exp(−γ‖x−z‖²) → complex boundary
+  Sigmoid:     K(x,z) = tanh(αx·z + c)
+
+RBF γ parameter:
+  Large γ  → narrow bell → complex boundary → overfits
+  Small γ  → wide bell  → smooth boundary → underfits
+        </div>
+      </div>
+      <div class="condition-block"><div class="label">When to Use SVM</div><ul>
+        <li>Effective in high-dimensional spaces (text classification, genomics)</li>
+        <li>Works well when number of features &gt; number of samples</li>
+        <li>Feature scaling is mandatory (distances define the margin)</li>
+        <li>Not ideal for very large datasets (quadratic training complexity)</li>
+        <li>RBF kernel is a safe default for non-linear problems</li>
+        <li>Multiclass: One-vs-One or One-vs-Rest strategies</li>
+      </ul></div>
+      <div class="example-block"><div class="label">Example</div><p>Classifying tumors as benign/malignant using cell features. SVM with RBF kernel finds a curved boundary in feature space that separates the two classes with maximum margin. Only the 5-10 support vectors (the hardest-to-classify tumors) determine this boundary — all other training examples are irrelevant once training is done.</p></div>
+      <div class="pros-cons">
+        <div class="pros"><div class="pc-label">Pros</div><ul><li>Effective in high dimensions</li><li>Robust to overfitting (max margin)</li><li>Kernel trick → non-linear boundaries</li><li>Works well with small-medium datasets</li></ul></div>
+        <div class="cons"><div class="pc-label">Cons</div><ul><li>Slow on large datasets</li><li>Requires feature scaling</li><li>Hard to interpret</li><li>Sensitive to C and γ hyperparameters</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+</div></div>
+
+  </div>
+
+</div>
+</div>
+
+<script>
+const TAB_NAMES = ["Calculus", "Deep Learning", "Linear Algebra", "ML Evaluation", "Probability", "Statistics", "Supervised ML"];
+const tabBtns   = document.querySelectorAll('.tab-btn');
+const tabPanels = document.querySelectorAll('.tab-panel');
+const searchEl  = document.getElementById('search');
+const clearBtn  = document.getElementById('search-clear');
+const srEl      = document.getElementById('search-results');
+const wrap      = document.getElementById('content-wrap');
+
+// ─ Active tab ─
+let activeIdx = 0;
+function activateTab(idx) {
+  activeIdx = idx;
+  tabBtns.forEach(b => b.classList.toggle('active', +b.dataset.idx === idx));
+  tabPanels.forEach(p => p.classList.toggle('active', +p.dataset.idx === idx));
+  srEl.style.display = 'none';
+  searchEl.value = '';
+  clearBtn.style.display = 'none';
+  wrap.scrollTop = 0;
+}
+tabBtns.forEach(b => b.addEventListener('click', () => activateTab(+b.dataset.idx)));
+
+// ─ Accordion (delegated) ─
+document.addEventListener('click', e => {
+  const hdr = e.target.closest('.topic-header');
+  if (!hdr) return;
+  const body = hdr.nextElementSibling;
+  const chev = hdr.querySelector('.chevron');
+  if (body?.classList.contains('topic-body')) {
+    body.classList.toggle('open');
+    chev?.classList.toggle('open');
+  }
+});
+
+// ─ Expand / Collapse all ─
+let expanded = false;
+document.getElementById('toggle-all').addEventListener('click', () => {
+  expanded = !expanded;
+  // Only affect the active panel
+  const panel = tabPanels[activeIdx];
+  panel.querySelectorAll('.topic-body').forEach(b => b.classList.toggle('open', expanded));
+  panel.querySelectorAll('.chevron').forEach(c => c.classList.toggle('open', expanded));
+  document.getElementById('toggle-label').textContent = expanded ? 'Collapse all' : 'Expand all';
+  document.getElementById('toggle-icon').className = expanded ? 'ti ti-arrows-minimize' : 'ti ti-arrows-maximize';
+});
+
+// ─ Search ─
+function stripTags(html) { return html.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim(); }
+function esc(s) { return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+function hilite(text, q) { return text.replace(new RegExp(esc(q),'gi'), m => `<mark class="hl">${m}</mark>`); }
+function snippet(text, q, len=160) {
+  const i = text.toLowerCase().indexOf(q.toLowerCase());
+  if (i === -1) return text.slice(0, len) + '…';
+  const s = Math.max(0, i - 60), e = Math.min(text.length, i + q.length + 100);
+  return (s>0?'…':'') + text.slice(s, e) + (e<text.length?'…':'');
+}
+
+searchEl.addEventListener('input', () => {
+  const q = searchEl.value.trim();
+  clearBtn.style.display = q ? 'block' : 'none';
+  if (!q) {
+    srEl.style.display = 'none';
+    tabPanels.forEach((p, i) => p.classList.toggle('active', i === activeIdx));
+    return;
+  }
+  tabPanels.forEach(p => p.classList.remove('active'));
+  srEl.style.display = 'block';
+
+  const hits = [];
+  tabPanels.forEach((panel, pi) => {
+    panel.querySelectorAll('.topic-card').forEach(card => {
+      const title = card.querySelector('.topic-title h2')?.textContent || '';
+      const bodyText = stripTags(card.querySelector('.topic-body')?.innerHTML || '');
+      if ((title + ' ' + bodyText).toLowerCase().includes(q.toLowerCase())) {
+        hits.push({ pi, title, bodyText });
+      }
+    });
+  });
+
+  if (!hits.length) {
+    srEl.innerHTML = `<div class="no-results"><i class="ti ti-mood-sad"></i>No results for "<strong>${q}</strong>"</div>`;
+    return;
+  }
+
+  const groups = {};
+  hits.forEach(h => (groups[h.pi] = groups[h.pi] || []).push(h));
+
+  let html = `<p class="sr-meta">${hits.length} result${hits.length!==1?'s':''} for <strong>"${q}"</strong></p>`;
+  Object.keys(groups).sort((a,b)=>+a-+b).forEach(pi => {
+    html += `<div class="sr-group-label">${TAB_NAMES[pi]}</div>`;
+    groups[pi].forEach(h => {
+      html += `<div class="sr-card" data-pi="${h.pi}" data-title="${h.title.replace(/"/g,'&quot;')}">
+        <div class="sr-card-tab">${TAB_NAMES[h.pi]}</div>
+        <div class="sr-card-title">${hilite(h.title, q)}</div>
+        <div class="sr-card-snippet">${hilite(snippet(h.bodyText, q), q)}</div>
+      </div>`;
+    });
+  });
+  srEl.innerHTML = html;
+
+  srEl.querySelectorAll('.sr-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const pi = +card.dataset.pi, title = card.dataset.title;
+      searchEl.value = ''; clearBtn.style.display = 'none';
+      srEl.style.display = 'none';
+      activateTab(pi);
+      setTimeout(() => {
+        tabPanels[pi].querySelectorAll('.topic-header').forEach(hdr => {
+          if (hdr.querySelector('.topic-title h2')?.textContent === title) {
+            hdr.nextElementSibling?.classList.add('open');
+            hdr.querySelector('.chevron')?.classList.add('open');
+            hdr.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      }, 80);
+    });
+  });
+});
+
+clearBtn.addEventListener('click', () => {
+  searchEl.value = '';
+  searchEl.dispatchEvent(new Event('input'));
+  searchEl.focus();
+});
+</script>
+</body>
+</html>
